@@ -171,6 +171,7 @@
         // --- CONFIGURAÇÕES DO ESTABELECIMENTO ---
         const WHATSAPP_NUMBER = "5535998382405"; // SUBSTITUA PELO SEU NÚMERO
         const PRINTER_NAME = "EPSON TM-T20X Receipt"; // NOME EXATO DA IMPRESSORA
+		const TAXA_DELIVERY = 8.00; // Valor da taxa de entrega
 
         // --- DADOS DO CARDÁPIO ---
         const menuItems = [
@@ -403,42 +404,77 @@
         }
 
         function updateCartUI() {
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
-            document.getElementById('cart-count').innerText = `${cart.length} itens`;
-            document.getElementById('cart-list').innerHTML = cart.map((item, idx) => `
-                <div class="cart-item"><div class="cart-item-header"><span>${item.name}</span><span>R$ ${item.price.toFixed(2).replace('.',',')}</span></div>
-                    <div class="cart-item-details">${item.details ? item.details + '<br>' : ''}${item.addons && item.addons.length > 0 ? 'Adic: ' + item.addons.map(a=>a.name).join(', ') + '<br>' : ''}${item.obs ? 'Obs: ' + item.obs : ''}</div>
-                    <div class="remove-item" onclick="removeFromCart(${idx})">Remover item</div></div>`).join('');
-            document.getElementById('final-total').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
-        }
+			const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+			const isDelivery = (customerInfo.type === 'Delivery');
+			const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
+
+    // Atualiza o total na barra inferior
+			document.getElementById('cart-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+			document.getElementById('cart-count').innerText = `${cart.length} itens`;
+
+    // Atualiza a lista dentro do modal do carrinho
+		let cartHtml = cart.map((item, idx) => `
+			<div class="cart-item">
+				<div class="cart-item-header"><span>${item.name}</span><span>R$ ${item.price.toFixed(2).replace('.', ',')}</span></div>
+				<div class="cart-item-details">
+					${item.details ? item.details + '<br>' : ''}
+					${item.addons && item.addons.length > 0 ? 'Adic: ' + item.addons.map(a => a.name).join(', ') + '<br>' : ''}
+					${item.obs ? 'Obs: ' + item.obs : ''}
+				</div>
+				<div class="remove-item" onclick="removeFromCart(${idx})">Remover item</div>
+			</div>`).join('');
+
+		// Se for Delivery, adiciona a linha da taxa na visualização do carrinho
+		if (isDelivery) {
+			cartHtml += `
+				<div class="cart-item" style="border-bottom: none; background: #fff9e6; margin-top: 10px; border-radius: 5px;">
+					<div class="cart-item-header" style="color: #d35400;">
+						<span><strong>Taxa de Entrega</strong></span>
+						<span><strong>R$ ${TAXA_DELIVERY.toFixed(2).replace('.', ',')}</strong></span>
+					</div>
+				</div>`;
+		}
+
+		document.getElementById('cart-list').innerHTML = cartHtml;
+		document.getElementById('final-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+}
 
         function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
         function openCart() { if (cart.length === 0) { alert("Carrinho vazio"); return; } document.getElementById('cart-modal').classList.remove('hidden'); }
         function cancelOrder() { if(confirm("Deseja cancelar?")) location.reload(); }
 
         // --- FINALIZAÇÃO E IMPRESSÃO ---
-        function finalizeOrder() {
-            // Gera Texto do Ticket
-            let text = `*NOVO PEDIDO - UAI BURGER*\n--------------------------------\n*Tipo:* ${customerInfo.type.toUpperCase()}\n`;
-            if (customerInfo.type === 'Loja') text += `*Mesa:* ${customerInfo.mesa}\n`;
-            if (customerInfo.type === 'Delivery') text += `*Cliente:* ${customerInfo.nome}\n*Tel:* ${customerInfo.tel}\n*End:* ${customerInfo.endereco}\n*Pag:* ${customerInfo.pagamento}\n`;
-            if (customerInfo.type === 'Retirada') text += `*Cliente:* ${customerInfo.nome}\n*Tel:* ${customerInfo.tel}\n`;
-            text += `--------------------------------\n`;
-            cart.forEach(item => {
-                text += `1x ${item.name} - R$ ${item.price.toFixed(2)}\n`;
-                if(item.details) text += `   (${item.details})\n`;
-                if(item.addons && item.addons.length) text += `   + ${item.addons.map(a=>a.name).join(', ')}\n`;
-                if(item.obs) text += `   Obs: ${item.obs}\n`;
-            });
-            text += `--------------------------------\n`;
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            text += `*TOTAL: R$ ${total.toFixed(2).replace('.',',')}*`;
+	function finalizeOrder() {
+		const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+		const isDelivery = (customerInfo.type === 'Delivery');
+		const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
 
-            printTicket(text); // Manda imprimir
-            const encoded = encodeURIComponent(text);
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, '_blank');
-        }
+		let text = `*NOVO PEDIDO - UAI BURGER*\n--------------------------------\n*Tipo:* ${customerInfo.type.toUpperCase()}\n`;
+		
+		if (customerInfo.type === 'Loja') text += `*Mesa:* ${customerInfo.mesa}\n`;
+		if (customerInfo.type === 'Delivery') {
+			text += `*Cliente:* ${customerInfo.nome}\n*Tel:* ${customerInfo.tel}\n*End:* ${customerInfo.endereco}\n*Pag:* ${customerInfo.pagamento}\n`;
+		}
+		if (customerInfo.type === 'Retirada') text += `*Cliente:* ${customerInfo.nome}\n*Tel:* ${customerInfo.tel}\n`;
+		
+		text += `--------------------------------\n`;
+		cart.forEach(item => {
+			text += `1x ${item.name} - R$ ${item.price.toFixed(2)}\n`;
+			if(item.details) text += `   (${item.details})\n`;
+			if(item.addons && item.addons.length) text += `   + ${item.addons.map(a=>a.name).join(', ')}\n`;
+			if(item.obs) text += `   Obs: ${item.obs}\n`;
+		});
+		
+		text += `--------------------------------\n`;
+		if (isDelivery) {
+			text += `Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+			text += `Taxa de Entrega: R$ ${TAXA_DELIVERY.toFixed(2).replace('.', ',')}\n`;
+		}
+		text += `*TOTAL: R$ ${totalFinal.toFixed(2).replace('.', ',')}*`;
+
+		const encoded = encodeURIComponent(text);
+		window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, '_blank');
+	}
 
         function printTicket(textRaw) {
             if (!qz.websocket.isActive()) { alert("QZ Tray não conectado!"); return; }
