@@ -501,8 +501,36 @@
 
             qz.print(config, printData).catch(function(e) { console.error(e); alert("Erro ao imprimir: " + e); });
         }
+		// --- LÓGICA DO QR CODE (AUTO-MESA) PASSO A PASSO ---
+    window.addEventListener('load', function() {
+        // 1. Olha para o link que o cliente acessou
+        const parametrosLink = new URLSearchParams(window.location.search);
+        
+        // 2. Procura pela palavra "mesa" no link
+        const numeroDaMesa = parametrosLink.get('mesa'); 
+
+        // 3. Se ele achar um número de mesa no link, faz a mágica:
+        if (numeroDaMesa) {
+            // Salva a informação do cliente silenciosamente
+            customerInfo.type = 'loja';
+            customerInfo.mesa = numeroDaMesa;
+
+            // Esconde a tela inicial de boas-vindas
+            document.getElementById('welcome-screen').style.display = 'none';
+            
+            // Mostra a tela do cardápio
+            document.getElementById('order-screen').style.display = 'block';
+
+            // Escreve lá no topo qual é a mesa
+            document.getElementById('customer-summary').innerHTML = 
+                `Modo: <strong>LOJA</strong> | <span id="mesa-label">Mesa: ${numeroDaMesa}</span>`;
+                
+            console.log("Sucesso! O cliente abriu o QR Code da Mesa: " + numeroDaMesa);
+        }
+    });
     </script>
 </body>
 </html>
+
 
 
