@@ -50,7 +50,20 @@
         .app-title { font-size: 1.2rem; font-weight: bold; }
         .order-info-mini { font-size: 0.8rem; opacity: 0.9; }
 
-        .categories { overflow-x: auto; white-space: nowrap; padding: 10px; background: white; border-bottom: 1px solid #ddd; }
+        .categories { 
+    overflow-x: auto; 
+    white-space: nowrap; 
+    padding: 10px; 
+    background: white; 
+    border-bottom: 1px solid #ddd; 
+    
+    /* Alterações para fixar */
+    position: -webkit-sticky; /* Suporte Safari */
+    position: sticky; 
+    top: 58px; /* Altura aproximada do seu header para grudar logo abaixo dele */
+    z-index: 99; /* Fica abaixo do header (100), mas acima dos itens do menu */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
         .cat-tag { display: inline-block; padding: 8px 15px; margin-right: 10px; background: #eee; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
         .cat-tag.active { background: var(--primary); color: white; }
 
