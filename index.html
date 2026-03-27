@@ -29,7 +29,36 @@
         .btn-primary { background-color: var(--secondary); color: var(--text-on-secondary); }
         .btn-cancel { background-color: #ff6b6b; color: white; }
         .btn-confirm { background-color: #51cf66; color: white; }
-
+		/* Adicione isso junto com os outros estilos */
+        .qtd-input { 
+            width: 45px; 
+            padding: 5px; 
+            text-align: center; 
+            border: 1px solid var(--primary); 
+            border-radius: 5px; 
+            font-weight: bold; 
+            margin-right: 10px;
+        }.modal-qtd-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+.input-modal-qtd {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid var(--primary);
+    border-radius: 5px;
+}
+		
+		
         #setup-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--primary); color: var(--text-on-primary);
@@ -295,13 +324,67 @@
             if(element) element.classList.add('active');
             const menuContainer = document.getElementById('menu-container');
             const filteredItems = menuItems.filter(item => item.cat === category);
-            menuContainer.innerHTML = filteredItems.map(item => `
-                <div class="menu-item" onclick="openProductModal('${item.id}')">
-                    <div class="item-info"><div class="item-code">#${item.id}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div></div>
-                    <div class="add-btn-icon">+</div>
-                </div>`).join('');
+            
+            menuContainer.innerHTML = filteredItems.map(item => {
+                // Se for categoria Bebidas, mostra o seletor de quantidade
+                if (item.cat === 'Bebidas') {
+                    return `
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-code">#${item.id}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" id="qtd-${item.id}" class="qtd-input" value="1" min="1" max="50">
+                            <div class="add-btn-icon" onclick="addBebidaComQtd('${item.id}')" style="cursor: pointer;">+</div>
+                        </div>
+                    </div>`;
+                } else {
+                    // Se não for Bebida, mantém o comportamento original de abrir o Modal
+                    return `
+                    <div class="menu-item" onclick="openProductModal('${item.id}')">
+                        <div class="item-info">
+                            <div class="item-code">#${item.id}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                            <div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+                        </div>
+                        <div class="add-btn-icon">+</div>
+                    </div>`;
+                }
+            }).join('');
         }
-
+		function addBebidaComQtd(id) {
+            // Acha o item na lista original
+            const itemOriginal = menuItems.find(i => i.id === id);
+            
+            // Lê a quantidade selecionada
+            const inputElement = document.getElementById(`qtd-${id}`);
+            const qtd = parseInt(inputElement.value) || 1;
+            
+            // Cria um novo item para o carrinho baseado no original
+            // Adicionando a propriedade 'quantidade' e mudando o nome para incluir "Nx"
+            const itemParaCarrinho = {
+                id: itemOriginal.id,
+                cat: itemOriginal.cat,
+                name: `${qtd}x ${itemOriginal.name}`, // Ex: "2x Coca-cola lata"
+                price: itemOriginal.price * qtd,      // Preço total (Ex: 2 * R$ 7,00 = R$ 14,00)
+                details: null,
+                addons: [],
+                obs: ''
+            };
+            
+            cart.push(itemParaCarrinho);
+            updateCartUI(); // Atualiza a barra verde lá embaixo
+            
+            // Volta o contador para 1 para o próximo cliente
+            inputElement.value = 1;
+            
+            // Aviso visual (Opcional, pode usar um toast/aviso se preferir)
+            alert(`${qtd}x ${itemOriginal.name} adicionado ao pedido!`);
+        }
+		
         function openProductModal(id) {
             const item = menuItems.find(i => i.id === id);
             currentItemSelection = { ...item, addons: [], obs: '' };
@@ -321,6 +404,19 @@
                     <div class="option-group"><span class="option-title">Adicionais (Opcional)</span>`;
                 addonsList.forEach((addon, idx) => { html += `<label class="check-option"><span><input type="checkbox" class="addon-check" value="${idx}"> ${addon.name}</span><span>+ R$ ${addon.price.toFixed(2).replace('.',',')}</span></label>`; });
                 html += `</div>`;
+				
+				
+				// Localize o final da montagem do 'html' dentro de openProductModal e adicione:
+html += `
+    <div class="modal-qtd-container">
+        <label style="font-weight:bold">Quantidade:</label>
+        <input type="number" id="modal-qtd" value="1" min="1" max="20" class="input-modal-qtd">
+    </div>
+`;
+optionsDiv.innerHTML = html;
+				
+				
+				
                 optionsDiv.innerHTML = html;
             }
             document.getElementById('product-modal').classList.remove('hidden');
@@ -329,22 +425,46 @@
         function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
 
         function confirmItem() {
-            const idNum = parseInt(currentItemSelection.id);
-            if (idNum >= 1 && idNum <= 14) {
-                const ponto = document.querySelector('input[name="ponto"]:checked').value;
-                const queijo = document.querySelector('input[name="queijo"]:checked').value;
-                currentItemSelection.details = `${ponto}, ${queijo}`;
-                document.querySelectorAll('.addon-check:checked').forEach(chk => {
-                    const addon = addonsList[chk.value];
-                    currentItemSelection.addons.push(addon);
-                    currentItemSelection.price += addon.price;
-                });
-            }
-            currentItemSelection.obs = document.getElementById('modal-obs').value;
-            cart.push(currentItemSelection);
-            updateCartUI();
-            closeModal();
-        }
+    const idNum = parseInt(currentItemSelection.id);
+    const qtdDesejada = parseInt(document.getElementById('modal-qtd').value) || 1;
+    
+    // 1. Captura as opções (apenas se for lanche/combo IDs 1 a 14)
+    let detalhesTemp = "";
+    let adicionaisTemp = [];
+    let precoAdicionais = 0;
+
+    if (idNum >= 1 && idNum <= 14) {
+        const ponto = document.querySelector('input[name="ponto"]:checked').value;
+        const queijo = document.querySelector('input[name="queijo"]:checked').value;
+        detalhesTemp = `${ponto}, ${queijo}`;
+        
+        document.querySelectorAll('.addon-check:checked').forEach(chk => {
+            const addon = addonsList[chk.value];
+            adicionaisTemp.push(addon);
+            precoAdicionais += addon.price;
+        });
+    }
+
+    const observacaoTemp = document.getElementById('modal-obs').value;
+
+    // 2. Loop para adicionar a quantidade de itens iguais ao carrinho
+    for (let i = 0; i < qtdDesejada; i++) {
+        // Criamos uma nova instância do objeto para cada unidade
+        const novoItem = {
+            ...currentItemSelection, // Copia dados base (id, nome, categoria)
+            price: currentItemSelection.price + precoAdicionais, // Preço base + adicionais
+            details: detalhesTemp,
+            addons: [...adicionaisTemp], // Clona o array de adicionais
+            obs: observacaoTemp
+        };
+        
+        cart.push(novoItem);
+    }
+
+    alert(`${qtdDesejada}x ${currentItemSelection.name} adicionado(s) com sucesso!`);
+    updateCartUI();
+    closeModal();
+}
 
         function updateCartUI() {
             const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
