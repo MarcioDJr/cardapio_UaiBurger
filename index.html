@@ -7,7 +7,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
@@ -51,19 +50,9 @@
         .order-info-mini { font-size: 0.8rem; opacity: 0.9; }
 
         .categories { 
-    overflow-x: auto; 
-    white-space: nowrap; 
-    padding: 10px; 
-    background: white; 
-    border-bottom: 1px solid #ddd; 
-    
-    /* Alterações para fixar */
-    position: -webkit-sticky; /* Suporte Safari */
-    position: sticky; 
-    top: 58px; /* Altura aproximada do seu header para grudar logo abaixo dele */
-    z-index: 99; /* Fica abaixo do header (100), mas acima dos itens do menu */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
+            overflow-x: auto; white-space: nowrap; padding: 10px; background: white; border-bottom: 1px solid #ddd; 
+            position: -webkit-sticky; position: sticky; top: 58px; z-index: 99; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
         .cat-tag { display: inline-block; padding: 8px 15px; margin-right: 10px; background: #eee; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
         .cat-tag.active { background: var(--primary); color: white; }
 
@@ -74,7 +63,7 @@
         .item-name { font-size: 1.1rem; font-weight: bold; color: var(--primary); margin: 2px 0; }
         .item-desc { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
         .item-price { font-weight: bold; font-size: 1.1rem; }
-        .add-btn-icon { background: var(--secondary); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .add-btn-icon { background: var(--secondary); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--text-on-secondary); }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 900; }
         .total-display { font-size: 1.1rem; font-weight: bold; }
@@ -86,7 +75,7 @@
         
         .modal-header { font-size: 1.3rem; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         .option-group { margin-bottom: 20px; }
-        .option-title { font-weight: bold; margin-bottom: 10px; display: block; background: #f9f9f9; padding: 5px; }
+        .option-title { font-weight: bold; margin-bottom: 10px; display: block; background: #f9f9f9; padding: 5px; border-radius: 5px; }
         .radio-option, .check-option { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
         
         #cart-modal-content { height: 90vh; display: flex; flex-direction: column; }
@@ -95,6 +84,11 @@
         .cart-item-header { display: flex; justify-content: space-between; font-weight: bold; }
         .cart-item-details { font-size: 0.85rem; color: #666; padding-left: 10px; margin-top: 5px; }
         .remove-item { color: red; font-size: 0.8rem; margin-top: 5px; cursor: pointer; display: inline-block; }
+
+        /* Estilos Novos para Quantidade */
+        .qtd-input { width: 45px; height: 35px; text-align: center; border: 1px solid var(--primary); border-radius: 5px; font-weight: bold; margin-right: 10px; }
+        .modal-qtd-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 1px solid #ddd; }
+        .input-modal-qtd { width: 60px; height: 40px; text-align: center; font-size: 1.2rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -138,9 +132,10 @@
         <div class="modal-content">
             <div class="modal-header" id="modal-title">Nome do Produto</div>
             <div id="modal-options"></div>
-            <div class="form-group">
-                <label>Observações:</label>
-                <textarea id="modal-obs" rows="3" style="width: 100%; border:1px solid #ccc; border-radius:5px;"></textarea>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Observações (Opcional):</label>
+                <textarea id="modal-obs" rows="3" style="width: 100%; border:1px solid #ccc; border-radius:5px; padding: 10px;" placeholder="Ex: Tirar cebola, ketchup à parte..."></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -177,8 +172,8 @@
             { id: '004', cat: 'Hamburgers', name: 'Duplo Uai Bacon', price: 42.90, desc: '2 Blends 150g, cheddar, bacon, alface, tomate, pão brioche, molho especial.' },
             { id: '005', cat: 'Hamburgers', name: 'Uai Ovo', price: 31.90, desc: 'Blend 150g, cheddar/muçarela, ovo, alface, tomate, pão brioche, molho especial.' },
             { id: '006', cat: 'Hamburgers', name: 'Uai Tropeiro', price: 39.90, desc: 'Blend 150g, muçarela, bacon cubos, geléia abacaxi/pimenta, couve crispy, ovo.' },
-            { id: '007', cat: 'Hamburgers', name: 'Uai Raíz', price: 30.90, desc: 'Blend linguiça, bacon, muçarela, vinagrete, molho especial.' },
-            { id: '008', cat: 'Hamburgers', name: 'Uai Caipira', price: 27.90, desc: 'Blend frango, bacon, muçarela, alface, tomate, molho especial.' },
+            { id: '007', cat: 'Hamburgers', name: 'Uai Raiz', price: 27.90, desc: 'Blend linguiça, bacon, muçarela, couve crispy, molho especial, vinagrete.' },
+            /*{ id: '008', cat: 'Hamburgers', name: 'Uai Caipira', price: 27.90, desc: 'Blend frango, bacon, muçarela, alface, tomate, molho especial.' },*/
             { id: '009', cat: 'Combos', name: 'Combo Uai Bacon', price: 46.90, desc: 'Uai Bacon + Batata ind. + Refri lata' },
             { id: '010', cat: 'Combos', name: 'Combo Duplo Uai Bacon', price: 59.90, desc: 'Duplo Uai Bacon + Batata ind. + Refri lata' },
             { id: '011', cat: 'Combos', name: 'Combo Casal Uai', price: 109.90, desc: '2 Lanches + 2 Batatas + 2 Refris lata' },
@@ -218,7 +213,7 @@
             { name: 'Queijo Cheddar', price: 5.00 },
             { name: 'Bacon', price: 6.00 },
             { name: 'Ovo', price: 3.00 },
-            { name: 'Couve crispy', price: 3.00 },
+			{ name: 'Couve crispy', price: 3.00 },
             { name: 'Geléia Abacaxi/Pimenta', price: 4.50 },
             { name: 'Molho Especial', price: 4.50 }
         ];
@@ -294,57 +289,151 @@
         function filterCat(category, element) {
             document.querySelectorAll('.cat-tag').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
+            
             const menuContainer = document.getElementById('menu-container');
             const filteredItems = menuItems.filter(item => item.cat === category);
-            menuContainer.innerHTML = filteredItems.map(item => `
-                <div class="menu-item" onclick="openProductModal('${item.id}')">
-                    <div class="item-info"><div class="item-code">#${item.id}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div></div>
-                    <div class="add-btn-icon">+</div>
-                </div>`).join('');
+            
+            menuContainer.innerHTML = filteredItems.map(item => {
+                if (item.cat === 'Bebidas') {
+                    // Bebidas: Adiciona direto com quantidade
+                    return `
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-code">#${item.id}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" id="qtd-${item.id}" class="qtd-input" value="1" min="1" max="50">
+                            <div class="add-btn-icon" onclick="addBebidaComQtd('${item.id}')" style="cursor: pointer;">+</div>
+                        </div>
+                    </div>`;
+                } else {
+                    // Outros: Abre Modal
+                    return `
+                    <div class="menu-item" onclick="openProductModal('${item.id}')">
+                        <div class="item-info">
+                            <div class="item-code">#${item.id}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                            <div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+                        </div>
+                        <div class="add-btn-icon">+</div>
+                    </div>`;
+                }
+            }).join('');
+        }
+
+        function addBebidaComQtd(id) {
+            const itemOriginal = menuItems.find(i => i.id === id);
+            const inputElement = document.getElementById(`qtd-${id}`);
+            const qtd = parseInt(inputElement.value) || 1;
+            
+            const itemParaCarrinho = {
+                id: itemOriginal.id,
+                cat: itemOriginal.cat,
+                name: `${qtd}x ${itemOriginal.name}`,
+                price: itemOriginal.price * qtd,
+                details: null,
+                addons: [],
+                obs: ''
+            };
+            
+            cart.push(itemParaCarrinho);
+            updateCartUI();
+            inputElement.value = 1;
         }
 
         function openProductModal(id) {
             const item = menuItems.find(i => i.id === id);
             currentItemSelection = { ...item, addons: [], obs: '' };
+            
             document.getElementById('modal-title').innerText = item.name;
             document.getElementById('modal-obs').value = '';
+            
             const optionsDiv = document.getElementById('modal-options');
-            optionsDiv.innerHTML = '';
+            let html = '';
             const idNum = parseInt(id);
+
+            // Apenas para Lanches e Combos (IDs 1 a 14) gera as opções de carne/queijo e adicionais
             if (idNum >= 1 && idNum <= 14) {
-                let html = `<div class="option-group"><span class="option-title">Ponto da Carne (Obrigatório)</span>
-                    <label class="radio-option"><input type="radio" name="ponto" value="Ao ponto" checked> Ao ponto</label>
-                    <label class="radio-option"><input type="radio" name="ponto" value="Mal passada"> Mal passada</label>
-                    <label class="radio-option"><input type="radio" name="ponto" value="Bem passada"> Bem passada</label></div>
-                    <div class="option-group"><span class="option-title">Tipo de Queijo (Obrigatório)</span>
-                    <label class="radio-option"><input type="radio" name="queijo" value="Muçarela" checked> Muçarela</label>
-                    <label class="radio-option"><input type="radio" name="queijo" value="Cheddar"> Cheddar</label></div>
-                    <div class="option-group"><span class="option-title">Adicionais (Opcional)</span>`;
-                addonsList.forEach((addon, idx) => { html += `<label class="check-option"><span><input type="checkbox" class="addon-check" value="${idx}"> ${addon.name}</span><span>+ R$ ${addon.price.toFixed(2).replace('.',',')}</span></label>`; });
+                html += `
+                    <div class="option-group">
+                        <span class="option-title">Ponto da Carne (Obrigatório)</span>
+                        <label class="radio-option"><input type="radio" name="ponto" value="Ao ponto" checked> Ao ponto</label>
+                        <label class="radio-option"><input type="radio" name="ponto" value="Mal passada"> Mal passada</label>
+                        <label class="radio-option"><input type="radio" name="ponto" value="Bem passada"> Bem passada</label>
+                    </div>
+                    <div class="option-group">
+                        <span class="option-title">Tipo de Queijo (Obrigatório)</span>
+                        <label class="radio-option"><input type="radio" name="queijo" value="Muçarela" checked> Muçarela</label>
+                        <label class="radio-option"><input type="radio" name="queijo" value="Cheddar"> Cheddar</label>
+                    </div>
+                    <div class="option-group">
+                        <span class="option-title">Adicionais (Opcional)</span>`;
+                addonsList.forEach((addon, idx) => { 
+                    html += `<label class="check-option"><span><input type="checkbox" class="addon-check" value="${idx}"> ${addon.name}</span><span>+ R$ ${addon.price.toFixed(2).replace('.',',')}</span></label>`; 
+                });
                 html += `</div>`;
-                optionsDiv.innerHTML = html;
             }
+
+            // O input de quantidade vai para TODOS os itens que abrem o modal
+            html += `
+                <div class="modal-qtd-container">
+                    <label style="font-weight:bold; font-size: 1.1rem;">Quantidade deste item:</label>
+                    <input type="number" id="modal-qtd" value="1" min="1" max="20" class="input-modal-qtd">
+                </div>
+            `;
+            
+            optionsDiv.innerHTML = html;
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
-        function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
-
         function confirmItem() {
             const idNum = parseInt(currentItemSelection.id);
+            const inputQtd = document.getElementById('modal-qtd');
+            const qtdDesejada = inputQtd ? (parseInt(inputQtd.value) || 1) : 1;
+            
+            let detalhesTemp = "";
+            let adicionaisTemp = [];
+            let precoAdicionais = 0;
+
+            // Busca os detalhes apenas se o item for um lanche/combo
             if (idNum >= 1 && idNum <= 14) {
-                const ponto = document.querySelector('input[name="ponto"]:checked').value;
-                const queijo = document.querySelector('input[name="queijo"]:checked').value;
-                currentItemSelection.details = `${ponto}, ${queijo}`;
+                const pontoElement = document.querySelector('input[name="ponto"]:checked');
+                const queijoElement = document.querySelector('input[name="queijo"]:checked');
+                
+                if(pontoElement && queijoElement) {
+                    detalhesTemp = `${pontoElement.value}, ${queijoElement.value}`;
+                }
+                
                 document.querySelectorAll('.addon-check:checked').forEach(chk => {
                     const addon = addonsList[chk.value];
-                    currentItemSelection.addons.push(addon);
-                    currentItemSelection.price += addon.price;
+                    adicionaisTemp.push(addon);
+                    precoAdicionais += addon.price;
                 });
             }
-            currentItemSelection.obs = document.getElementById('modal-obs').value;
-            cart.push(currentItemSelection);
+
+            const observacaoTemp = document.getElementById('modal-obs').value;
+
+            // Faz o loop para adicionar as unidades selecionadas
+            for (let i = 0; i < qtdDesejada; i++) {
+                const novoItem = {
+                    ...currentItemSelection,
+                    price: currentItemSelection.price + precoAdicionais,
+                    details: detalhesTemp,
+                    addons: [...adicionaisTemp],
+                    obs: observacaoTemp
+                };
+                cart.push(novoItem);
+            }
+
             updateCartUI();
             closeModal();
+        }
+
+        function closeModal() { 
+            document.getElementById('product-modal').classList.add('hidden'); 
         }
 
         function updateCartUI() {
@@ -375,8 +464,15 @@
         }
 
         function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
-        function openCart() { if (cart.length === 0) { alert("Carrinho vazio"); return; } document.getElementById('cart-modal').classList.remove('hidden'); }
-        function cancelOrder() { if(confirm("Deseja cancelar?")) location.reload(); }
+        
+        function openCart() { 
+            if (cart.length === 0) { alert("Carrinho vazio"); return; } 
+            document.getElementById('cart-modal').classList.remove('hidden'); 
+        }
+        
+        function cancelOrder() { 
+            if(confirm("Deseja cancelar o pedido?")) location.reload(); 
+        }
 
         function finalizeOrder() {
             const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
@@ -411,25 +507,18 @@
             qz.print(config, printData).catch(e => console.error(e));
         }
 
-        // --- LÓGICA DO QR CODE (DEFINITIVA) ---
+        // LÓGICA DO QR CODE
         window.addEventListener('load', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const mesaParam = urlParams.get('mesa'); 
 
             if (mesaParam) {
-                // Preenche os dados silenciosamente
                 customerInfo.type = 'Loja';
                 customerInfo.mesa = mesaParam;
-                
-                // Pula as telas iniciais
                 document.getElementById('setup-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
-                
-                // Atualiza o cabeçalho e o cardápio
                 document.getElementById('header-info').innerText = `Mesa: ${mesaParam}`;
                 renderMenu();
-                
-                console.log("Mesa detectada via QR: " + mesaParam);
             }
         });
     </script>
