@@ -210,7 +210,6 @@
             { id: '005', cat: 'Hamburgers', name: 'Uai Ovo', price: 31.90, desc: 'Blend 150g, cheddar/muçarela, ovo, alface, tomate, pão brioche, molho especial.', img: 'img/005.webp' },
             { id: '006', cat: 'Hamburgers', name: 'Uai Tropeiro', price: 39.90, desc: 'Blend 150g, muçarela, bacon cubos, geléia abacaxi/pimenta, couve crispy, ovo.', img: 'img/006.webp' },
             { id: '007', cat: 'Hamburgers', name: 'Uai Raiz', price: 27.90, desc: 'Blend linguiça, bacon, muçarela, couve crispy, molho especial, vinagrete.', img: 'img/007.webp' },
-            // { id: '008', cat: 'Hamburgers', name: 'Uai Caipira', price: 27.90, desc: 'Blend frango, bacon, muçarela, alface, tomate, molho especial.', img: 'img/008.webp' },
             { id: '009', cat: 'Combos', name: 'Combo Uai Bacon', price: 46.90, desc: 'Uai Bacon + Batata ind. + Refri lata', img: 'img/009.webp' },
             { id: '010', cat: 'Combos', name: 'Combo Duplo Uai Bacon', price: 59.90, desc: 'Duplo Uai Bacon + Batata ind. + Refri lata', img: 'img/010.webp' },
             { id: '011', cat: 'Combos', name: 'Combo Casal Uai', price: 109.90, desc: 'Duplo Uai Bacon + Uai Bacon + 2 Batatas + 2 Refris lata', img: 'img/011.webp' },
@@ -429,6 +428,35 @@
                 html += `</div>`;
             }
 
+            // === NOVA LÓGICA DE REFRIGERANTES PARA OS COMBOS ===
+            if (item.cat === 'Combos') {
+                html += `
+                    <div class="option-group">
+                        <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32;">Refrigerante Incluso (Escolha 1)</span>
+                        <select id="combo-refri-1" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; font-size: 16px;">
+                            <option value="Coca-Cola lata">Coca-Cola lata</option>
+                            <option value="Coca-Cola Zero lata">Coca-Cola Zero lata</option>
+                            <option value="Guaraná Antarctica lata">Guaraná Antarctica lata</option>
+                            <option value="Guaraná Antarctica Zero lata">Guaraná Antarctica Zero lata</option>
+                        </select>
+                `;
+                
+                // Se for o Combo Casal Uai (id '011'), adiciona a segunda opção
+                if (id === '011') {
+                    html += `
+                        <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32; margin-top: 10px;">2º Refrigerante Incluso</span>
+                        <select id="combo-refri-2" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
+                            <option value="Coca-Cola lata">Coca-Cola lata</option>
+                            <option value="Coca-Cola Zero lata">Coca-Cola Zero lata</option>
+                            <option value="Guaraná Antarctica lata">Guaraná Antarctica lata</option>
+                            <option value="Guaraná Antarctica Zero lata">Guaraná Antarctica Zero lata</option>
+                        </select>
+                    `;
+                }
+                html += `</div>`;
+            }
+            // ====================================================
+
             // O input de quantidade vai para TODOS os itens que abrem o modal
             html += `
                 <div class="modal-qtd-container">
@@ -466,6 +494,29 @@
                 });
             }
 
+            // === CAPTURA A ESCOLHA DOS REFRIGERANTES ===
+            const refri1Select = document.getElementById('combo-refri-1');
+            const refri2Select = document.getElementById('combo-refri-2');
+            let stringRefri = "";
+            
+            if (refri1Select) {
+                if (refri2Select) {
+                    stringRefri = `Refris: 1x ${refri1Select.value}, 1x ${refri2Select.value}`;
+                } else {
+                    stringRefri = `Refri: ${refri1Select.value}`;
+                }
+            }
+
+            // Junta a string do refrigerante com os detalhes do lanche
+            if (stringRefri !== "") {
+                if (detalhesTemp !== "") {
+                    detalhesTemp += " | " + stringRefri;
+                } else {
+                    detalhesTemp = stringRefri;
+                }
+            }
+            // ===========================================
+
             const observacaoTemp = document.getElementById('modal-obs').value;
 
             // Faz o loop para adicionar as unidades selecionadas
@@ -488,41 +539,40 @@
             document.getElementById('product-modal').classList.add('hidden'); 
         }
 
-function updateCartUI() {
-    const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-    const isDelivery = (currentService === 'delivery');
-    const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
+        function updateCartUI() {
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const isDelivery = (currentService === 'delivery');
+            const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
 
-    document.getElementById('cart-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
-    document.getElementById('cart-count').innerText = `${cart.length} itens`;
+            document.getElementById('cart-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('cart-count').innerText = `${cart.length} itens`;
 
-    // CORREÇÃO AQUI: Usando crase (`) e removendo o espaço em ${item.price...}
-    let cartHtml = cart.map((item, idx) => `
-        <div class="cart-item">
-            <div class="cart-item-header">
-                <span>${item.name}</span>
-                <span>R$ ${item.price.toFixed(2).replace('.', ',')}</span>
-            </div>
-            <div class="cart-item-details">
-                ${item.details ? item.details + '<br>' : ''}
-                ${item.addons && item.addons.length > 0 ? 'Adic: ' + item.addons.map(a => a.name).join(', ') + '<br>' : ''}
-                ${item.obs ? 'Obs: ' + item.obs : ''}
-            </div>
-            <div class="remove-item" onclick="removeFromCart(${idx})">Remover item</div>
-        </div>`).join('');
+            let cartHtml = cart.map((item, idx) => `
+                <div class="cart-item">
+                    <div class="cart-item-header">
+                        <span>${item.name}</span>
+                        <span>R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div class="cart-item-details">
+                        ${item.details ? item.details + '<br>' : ''}
+                        ${item.addons && item.addons.length > 0 ? 'Adic: ' + item.addons.map(a => a.name).join(', ') + '<br>' : ''}
+                        ${item.obs ? 'Obs: ' + item.obs : ''}
+                    </div>
+                    <div class="remove-item" onclick="removeFromCart(${idx})">Remover item</div>
+                </div>`).join('');
 
-    if (isDelivery) {
-        cartHtml += `<div class="cart-item" style="border-bottom: none; background: #fff9e6; margin-top: 10px; border-radius: 5px;">
-            <div class="cart-item-header" style="color: #d35400;">
-                <span><strong>Taxa de Entrega</strong></span>
-                <span><strong>R$ ${TAXA_DELIVERY.toFixed(2).replace('.', ',')}</strong></span>
-            </div>
-        </div>`;
-    }
+            if (isDelivery) {
+                cartHtml += `<div class="cart-item" style="border-bottom: none; background: #fff9e6; margin-top: 10px; border-radius: 5px;">
+                    <div class="cart-item-header" style="color: #d35400;">
+                        <span><strong>Taxa de Entrega</strong></span>
+                        <span><strong>R$ ${TAXA_DELIVERY.toFixed(2).replace('.', ',')}</strong></span>
+                    </div>
+                </div>`;
+            }
 
-    document.getElementById('cart-list').innerHTML = cartHtml;
-    document.getElementById('final-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
-}
+            document.getElementById('cart-list').innerHTML = cartHtml;
+            document.getElementById('final-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+        }
 
         function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
         
