@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Uai Burger - Cardápio Digital</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6C0803; /* Terracota */
+            --secondary: #FFDB58; /* Amarelo Mostarda */
+            --dark: #2c2c2c;
+            --light: #f4f4f4;
+            --white: #ffffff;
+            --text-on-primary: #ffffff;
+            --text-on-secondary: #2c2c2c;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; background-color: var(--light); color: var(--dark); padding-bottom: 80px; }
+
+        .hidden { display: none !important; }
+        .btn { border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; width: 100%; }
+        .btn-primary { background-color: var(--secondary); color: var(--text-on-secondary); }
+        .btn-cancel { background-color: #ff6b6b; color: white; }
+        .btn-confirm { background-color: #51cf66; color: white; }
+
+        #setup-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--primary); color: var(--text-on-primary);
+            z-index: 2000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px; overflow-y: auto;
+        }
+        .logo-area { font-size: 2.5rem; font-weight: bold; margin-bottom: 30px; text-align: center; }
+        .setup-card { background: white; color: var(--dark); padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        .service-options { display: flex; gap: 10px; margin-bottom: 15px; }
+        .service-btn { flex: 1; padding: 10px; border: 2px solid var(--primary); background: white; border-radius: 5px; cursor: pointer; text-align: center; font-weight: bold; }
+        .service-btn.active { background: var(--primary); color: white; }
+
+        header { background-color: var(--primary); color: var(--text-on-primary); padding: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .app-title { font-size: 1.2rem; font-weight: bold; }
+        .order-info-mini { font-size: 0.8rem; opacity: 0.9; }
+
+        .categories { 
+            overflow-x: auto; white-space: nowrap; padding: 10px; background: white; border-bottom: 1px solid #ddd; 
+            position: -webkit-sticky; position: sticky; top: 58px; z-index: 99; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .cat-tag { display: inline-block; padding: 8px 15px; margin-right: 10px; background: #eee; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
+        .cat-tag.active { background: var(--primary); color: white; }
+
+        .menu-list { padding: 15px; max-width: 800px; margin: 0 auto; }
+                
+        /* Card do produto aprimorado */
+        .menu-item { 
+            background: white; border-radius: 10px; padding: 12px; margin-bottom: 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.1s;
+        }
+        .menu-item:active { transform: scale(0.98); }
+
+        .item-img-container {
+            width: 80px; height: 80px; border-radius: 8px; overflow: hidden;
+            flex-shrink: 0; margin-right: 12px; background: #f0f0f0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .item-placeholder {
+            font-size: 2.5rem; color: var(--primary);
+        }
+
+        .item-info { flex: 1; padding-right: 5px; }
+        .item-code { font-size: 0.75rem; color: #888; font-weight: bold; }
+        .item-name { font-size: 1.1rem; font-weight: bold; color: var(--primary); margin: 2px 0; }
+        .item-desc { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
+        .item-price { font-weight: bold; font-size: 1.1rem; }
+
+        .add-btn-icon { 
+            background: var(--secondary); width: 35px; height: 35px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; color: var(--text-on-secondary); flex-shrink: 0;
+        }
+
+        /* Estilos para o input de quantidade (bebidas) */
+        .qtd-input { width: 45px; height: 35px; text-align: center; border: 1px solid var(--primary); border-radius: 5px; font-weight: bold; margin-right: 10px; }
+        .modal-qtd-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 1px solid #ddd; }
+        .input-modal-qtd { width: 60px; height: 40px; text-align: center; font-size: 1.2rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 5px; }
+
+        /* Responsivo: reduz tamanho da imagem em telas pequenas */
+        @media (max-width: 480px) {
+            .item-img-container {
+                width: 70px; height: 70px; margin-right: 8px;
+            }
+            .item-placeholder {
+                font-size: 2rem;
+            }
+        }
+
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 900; }
+        .total-display { font-size: 1.1rem; font-weight: bold; }
+        .bottom-actions { display: flex; gap: 10px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; display: flex; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .modal-header { font-size: 1.3rem; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .option-group { margin-bottom: 20px; }
+        .option-title { font-weight: bold; margin-bottom: 10px; display: block; background: #f9f9f9; padding: 5px; border-radius: 5px; }
+        .radio-option, .check-option { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        
+        #cart-modal-content { height: 90vh; display: flex; flex-direction: column; }
+        .cart-items { flex: 1; overflow-y: auto; }
+        .cart-item { padding: 10px; border-bottom: 1px solid #eee; }
+        .cart-item-header { display: flex; justify-content: space-between; font-weight: bold; }
+        .cart-item-details { font-size: 0.85rem; color: #666; padding-left: 10px; margin-top: 5px; }
+        .remove-item { color: red; font-size: 0.8rem; margin-top: 5px; cursor: pointer; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen">
+        <div class="logo-area">Uai Burger 🍔</div>
+        <div class="cidade"><h2>Guaxupé MG</h2></div>
+        <div class="setup-card">
+            <h3>Como deseja pedir?</h3>
+            <div class="service-options">
+                <div class="service-btn" onclick="setService('loja')" id="btn-loja">Loja</div>
+                <div class="service-btn" onclick="setService('delivery')" id="btn-delivery">Delivery</div>
+                <div class="service-btn" onclick="setService('retirada')" id="btn-retirada">Retirada</div>
+            </div>
+            <div id="form-setup"></div>
+            <button class="btn btn-primary" onclick="startOrder()" style="margin-top: 20px;">INICIAR PEDIDO</button>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        <header>
+            <div class="header-content">
+                <div class="app-title">Uai Burger</div>
+                <div class="order-info-mini" id="header-info">Mesa: --</div>
+            </div>
+        </header>
+        <div class="categories" id="category-bar"></div>
+        <div class="menu-list" id="menu-container"></div>
+        <div class="bottom-bar" id="bottom-bar">
+            <div class="total-display">
+                Total: <span id="cart-total">R$ 0,00</span>
+                <div style="font-size: 0.8rem; font-weight: normal; color: #666;" id="cart-count">0 itens</div>
+            </div>
+            <div class="bottom-actions">
+                <button class="btn btn-cancel" style="padding: 10px;" onclick="cancelOrder()">Cancelar</button>
+                <button class="btn btn-primary" onclick="openCart()">Finalizar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="product-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-title">Nome do Produto</div>
+            <div id="modal-options"></div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Observações (Opcional):</label>
+                <textarea id="modal-obs" rows="3" style="width: 100%; border:1px solid #ccc; border-radius:5px; padding: 10px;" placeholder="Ex: Tirar cebola, ketchup à parte..."></textarea>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-confirm" onclick="confirmItem()">Confirmar Item</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="modal-overlay hidden">
+        <div class="modal-content" id="cart-modal-content">
+            <div class="modal-header">Resumo do Pedido</div>
+            <div class="cart-items" id="cart-list"></div>
+            <div style="padding: 15px 0; border-top: 2px solid #eee;">
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px;">
+                    <span>Total Final:</span>
+                    <span id="final-total">R$ 0,00</span>
+                </div>
+                <button class="btn btn-primary" onclick="finalizeOrder()"> ENVIAR PEDIDO 🍔</button>
+                <br><br>
+                <button class="btn btn-cancel" onclick="document.getElementById('cart-modal').classList.add('hidden')">Voltar</button>
+            </div>
+        </div>
+    </div>
+    
+        <script>
+        const WHATSAPP_NUMBER = "5535998382405";
+        const PRINTER_NAME = "EPSON TM-T20X Receipt";
+        const TAXA_DELIVERY = 0.00;
+
+        // Menu com imagens (adicione o caminho da imagem em cada item)
+        const menuItems = [
+            { id: '001', cat: 'Hamburgers', name: 'Uai Burger', price: 26.90, desc: 'Blend 150g, muçarela, pão brioche, molho especial.', img: 'img/001.webp' },
+            { id: '002', cat: 'Hamburgers', name: 'Uai Salada', price: 28.90, desc: 'Blend 150g, muçarela, tomate, alface, pão brioche, molho especial.', img: 'img/002.webp' },
+            { id: '003', cat: 'Hamburgers', name: 'Uai Bacon', price: 32.90, desc: 'Blend 150g, cheddar, bacon, alface, tomate, pão brioche, molho especial.', img: 'img/003.webp' },
+            { id: '004', cat: 'Hamburgers', name: 'Duplo Uai Bacon', price: 42.90, desc: '2 Blends 150g, cheddar, bacon, alface, tomate, pão brioche, molho especial.', img: 'img/004.webp' },
+            { id: '005', cat: 'Hamburgers', name: 'Uai Ovo', price: 31.90, desc: 'Blend 150g, cheddar/muçarela, ovo, alface, tomate, pão brioche, molho especial.', img: 'img/005.webp' },
+            { id: '006', cat: 'Hamburgers', name: 'Uai Tropeiro', price: 39.90, desc: 'Blend 150g, muçarela, bacon cubos, geléia abacaxi/pimenta, couve crispy, ovo.', img: 'img/006.webp' },
+            { id: '007', cat: 'Hamburgers', name: 'Uai Raiz', price: 27.90, desc: 'Blend linguiça, bacon, muçarela, couve crispy, molho especial, vinagrete.', img: 'img/007.webp' },
+            { id: '009', cat: 'Combos', name: 'Combo Uai Bacon', price: 46.90, desc: 'Uai Bacon + Batata ind. + Refri lata', img: 'img/009.webp' },
+            { id: '010', cat: 'Combos', name: 'Combo Duplo Uai Bacon', price: 59.90, desc: 'Duplo Uai Bacon + Batata ind. + Refri lata', img: 'img/010.webp' },
+            { id: '011', cat: 'Combos', name: 'Combo Casal Uai', price: 109.90, desc: 'Duplo Uai Bacon + Uai Bacon + 2 Batatas + 2 Refris lata', img: 'img/011.webp' },
+            { id: '012', cat: 'Mini Lanches', name: 'Mini Burger (8un)', price: 55.90, desc: 'Blend artesanal, muçarela, pão hamburger, molho especial', img: 'img/012.webp' },
+            { id: '013', cat: 'Mini Lanches', name: 'Mini Salada (8un)', price: 60.90, desc: 'Blend, muçarela, tomate, alface, pão, molho', img: 'img/013.webp' },
+            { id: '014', cat: 'Mini Lanches', name: 'Mini Bacon (8un)', price: 65.90, desc: 'Blend, cheddar, bacon, alface, tomate, pão, molho', img: 'img/014.webp' },
+            { id: '015', cat: 'Acompanhamentos', name: 'Batata Individual', price: 10.50, desc: '', img: 'img/015.webp' },
+            { id: '016', cat: 'Acompanhamentos', name: 'Batata Grande', price: 16.50, desc: '', img: 'img/016.webp' },
+            { id: '017', cat: 'Acompanhamentos', name: 'Batata c/ Cheddar/Bacon', price: 21.50, desc: '', img: 'img/017.webp' },
+            { id: '018', cat: 'Adicionais', name: 'Hamburger 150g', price: 12.00, desc: 'Item avulso', img: 'img/018.webp' },
+            { id: '019', cat: 'Adicionais', name: 'Queijo Cheddar', price: 5.00, desc: 'Item avulso', img: 'img/019.webp' },
+            { id: '020', cat: 'Adicionais', name: 'Bacon', price: 6.00, desc: 'Item avulso', img: 'img/020.webp' },
+            { id: '021', cat: 'Adicionais', name: 'Ovo', price: 3.00, desc: 'Item avulso', img: 'img/021.webp' },
+            { id: '022', cat: 'Adicionais', name: 'Geléia Abacaxi/Pimenta', price: 4.50, desc: 'Item avulso', img: 'img/022.webp' },
+            { id: '023', cat: 'Adicionais', name: 'Molho Especial', price: 4.50, desc: 'Item avulso', img: 'img/023.webp' },
+            { id: '024', cat: 'Bebidas', name: 'Coca-cola lata', price: 7.00, desc: '', img: 'img/024.webp' },
+            { id: '025', cat: 'Bebidas', name: 'Coca-cola lata Zero', price: 7.00, desc: '', img: 'img/025.webp' },
+            { id: '026', cat: 'Bebidas', name: 'Guaraná Antarctica lata', price: 7.00, desc: '', img: 'img/026.webp' },
+            { id: '027', cat: 'Bebidas', name: 'Guaraná Antarctica Zero', price: 7.00, desc: '', img: 'img/027.webp' },
+            { id: '028', cat: 'Bebidas', name: 'Coca-cola 600ml', price: 10.00, desc: '', img: 'img/028.webp' },
+            { id: '029', cat: 'Bebidas', name: 'Coca-cola 600ml Zero', price: 10.00, desc: '', img: 'img/029.webp' },
+            { id: '030', cat: 'Bebidas', name: 'Guaraná 600ml', price: 10.00, desc: '', img: 'img/030.webp' },
+            { id: '031', cat: 'Bebidas', name: 'Guaraná 600ml Zero', price: 10.00, desc: '', img: 'img/031.webp' },
+            { id: '032', cat: 'Bebidas', name: 'Suco de Laranja', price: 7.00, desc: '', img: 'img/032.webp' },
+            { id: '033', cat: 'Bebidas', name: 'Suco de Uva', price: 7.00, desc: '', img: 'img/033.webp' },
+            { id: '034', cat: 'Bebidas', name: 'Cerveja Antarctica 473ml', price: 10.00, desc: '', img: 'img/034.webp' },
+            { id: '035', cat: 'Bebidas', name: 'Cerveja Brahma 473ml', price: 10.00, desc: '', img: 'img/035.webp' },
+            { id: '036', cat: 'Bebidas', name: 'Cerveja Skol 473ml', price: 10.00, desc: '', img: 'img/036.webp' },
+            { id: '037', cat: 'Bebidas', name: 'Água 500ml', price: 4.00, desc: '', img: 'img/037.webp' },
+            { id: '038', cat: 'Bebidas', name: 'Água com Gas', price: 4.00, desc: '', img: 'img/038.webp' },
+            { id: '039', cat: 'Sobremesa', name: 'Mini Donuts Nutella', price: 12.90, desc: 'Porção com oito Mini Donuts', img: 'img/039.webp' },
+            { id: '040', cat: 'Sobremesa', name: 'Mini Donuts Doce de Leite', price: 12.90, desc: 'Porção com oito Mini Donuts', img: 'img/040.webp' }
+        ];
+        
+        const addonsList = [
+            { name: 'Hamburger 150g', price: 12.00 },
+            { name: 'Queijo Cheddar', price: 5.00 },
+            { name: 'Bacon', price: 6.00 },
+            { name: 'Ovo', price: 3.00 },
+            { name: 'Couve crispy', price: 3.00 },
+            { name: 'Geléia Abacaxi/Pimenta', price: 4.50 },
+            { name: 'Molho Especial', price: 4.50 }
+        ];
+        
+        let currentService = '';
+        let customerInfo = { type: '', mesa: '', nome: '', tel: '', endereco: '', pagamento: '' };
+        let cart = [];
+        let currentItemSelection = null;
+
+        // QZ Tray Setup
+        qz.security.setCertificatePromise((resolve) => resolve("-----BEGIN CERTIFICATE-----\nMIID...[CERT]...-----END CERTIFICATE-----"));
+        qz.security.setSignaturePromise(() => new Promise((resolve) => resolve()));
+        
+        function connectQZ() {
+            if (!qz.websocket.isActive()) {
+                qz.websocket.connect().catch(e => console.error("Erro QZ:", e));
+            }
+        }
+        connectQZ();
+
+        function setService(type) {
+            currentService = type;
+            document.querySelectorAll('.service-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById(`btn-${type}`);
+            if(btn) btn.classList.add('active');
+            renderSetupForm();
+        }
+
+        function renderSetupForm() {
+            const container = document.getElementById('form-setup');
+            let html = '';
+            if (currentService === 'loja') {
+                html = `<div class="form-group"><label>Escolha a Mesa:</label><select id="input-mesa">${Array.from({length: 10}, (_, i) => `<option value="${i+1}">Mesa ${i+1}</option>`).join('')}</select></div>`;
+            } else if (currentService === 'delivery') {
+                html = `<div class="form-group"><label>Nome:</label><input type="text" id="input-nome"></div><div class="form-group"><label>Telefone:</label><input type="tel" id="input-tel"></div><div class="form-group"><label>Endereço Completo:</label><input type="text" id="input-end"></div><div class="form-group"><label>Forma de Pagamento:</label><select id="input-pag"><option value="Cartão">Cartão</option><option value="Pix">Pix</option><option value="Dinheiro">Dinheiro</option></select></div>`;
+            } else if (currentService === 'retirada') {
+                html = `<div class="form-group"><label>Nome:</label><input type="text" id="input-nome"></div><div class="form-group"><label>Telefone:</label><input type="tel" id="input-tel"></div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        function startOrder() {
+            if (!currentService) { alert("Selecione uma opção."); return; }
+            
+            if (currentService === 'loja') {
+                customerInfo.type = 'Loja';
+                customerInfo.mesa = document.getElementById('input-mesa').value;
+                document.getElementById('header-info').innerText = `Mesa: ${customerInfo.mesa}`;
+            } else if (currentService === 'delivery') {
+                const nome = document.getElementById('input-nome').value;
+                const end = document.getElementById('input-end').value;
+                if (!nome || !end) { alert("Preencha os campos."); return; }
+                customerInfo = { type: 'Delivery', nome: nome, tel: document.getElementById('input-tel').value, endereco: end, pagamento: document.getElementById('input-pag').value };
+                document.getElementById('header-info').innerText = `Delivery: ${nome}`;
+            } else {
+                const nome = document.getElementById('input-nome').value;
+                if (!nome) { alert("Preencha o nome."); return; }
+                customerInfo = { type: 'Retirada', nome: nome, tel: document.getElementById('input-tel').value };
+                document.getElementById('header-info').innerText = `Retirada: ${nome}`;
+            }
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const categories = [...new Set(menuItems.map(item => item.cat))];
+            const catContainer = document.getElementById('category-bar');
+            catContainer.innerHTML = categories.map((cat, index) => `<span class="cat-tag ${index === 0 ? 'active' : ''}" onclick="filterCat('${cat}', this)">${cat}</span>`).join('');
+            filterCat(categories[0], catContainer.firstChild);
+        }
+        
+                // Função auxiliar para gerar o bloco de imagem (com placeholder se não houver img)
+        function getImageHtml(item) {
+            if (item.img) {
+                return `<img src="${item.img}" alt="${item.name}" class="item-img" onerror="this.style.display='none'; this.parentNode.querySelector('.item-placeholder').style.display='block';">`;
+            } else {
+                return `<span class="item-placeholder">🍔</span>`;
+            }
+        }
+        function filterCat(category, element) {
+             document.querySelectorAll('.cat-tag').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            const menuContainer = document.getElementById('menu-container');
+            const filteredItems = menuItems.filter(item => item.cat === category);
+            
+            menuContainer.innerHTML = filteredItems.map(item => {
+                // Imagem comum a todos
+                const imgHtml = getImageHtml(item);
+                if (item.cat === 'Bebidas') {
+                    return `
+                    <div class="menu-item">
+                        <div class="item-img-container">
+                            ${imgHtml}
+                        </div>
+                        <div class="item-info">
+                            <div class="item-code">#${item.id}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" id="qtd-${item.id}" class="qtd-input" value="1" min="1" max="50">
+                            <div class="add-btn-icon" onclick="addBebidaComQtd('${item.id}')" style="cursor: pointer;">+</div>
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="menu-item" onclick="openProductModal('${item.id}')">
+                        <div class="item-img-container">
+                            ${imgHtml}
+                        </div>
+                        <div class="item-info">
+                            <div class="item-code">#${item.id}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                            <div class="item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+                        </div>
+                        <div class="add-btn-icon">+</div>
+                    </div>`;
+                }
+            }).join('');
+        }
+
+        // ... (o restante das funções permanece IDÊNTICO ao original) ...
+        function addBebidaComQtd(id) {
+            const itemOriginal = menuItems.find(i => i.id === id);
+            const inputElement = document.getElementById(`qtd-${id}`);
+            const qtd = parseInt(inputElement.value) || 1;
+            
+            const itemParaCarrinho = {
+                id: itemOriginal.id,
+                cat: itemOriginal.cat,
+                name: `${qtd}x ${itemOriginal.name}`,
+                price: itemOriginal.price * qtd,
+                details: null,
+                addons: [],
+                obs: ''
+            };
+            
+            cart.push(itemParaCarrinho);
+            updateCartUI();
+            inputElement.value = 1;
+        }
+
+        function openProductModal(id) {
+            const item = menuItems.find(i => i.id === id);
+            currentItemSelection = { ...item, addons: [], obs: '' };
+            
+            document.getElementById('modal-title').innerText = item.name;
+            document.getElementById('modal-obs').value = '';
+            
+            const optionsDiv = document.getElementById('modal-options');
+            let html = '';
+            const idNum = parseInt(id);
+
+            // Apenas para Lanches e Combos (IDs 1 a 14) gera as opções de carne/queijo e adicionais
+            if (idNum >= 1 && idNum <= 14) {
+                html += `
+                    <div class="option-group">
+                        <span class="option-title">Ponto da Carne (Obrigatório)</span>
+                        <label class="radio-option"><input type="radio" name="ponto" value="Ao ponto" checked> Ao ponto</label>
+                        <label class="radio-option"><input type="radio" name="ponto" value="Mal passada"> Mal passada</label>
+                        <label class="radio-option"><input type="radio" name="ponto" value="Bem passada"> Bem passada</label>
+                    </div>
+                    <div class="option-group">
+                        <span class="option-title">Tipo de Queijo (Obrigatório)</span>
+                        <label class="radio-option"><input type="radio" name="queijo" value="Muçarela" checked> Muçarela</label>
+                        <label class="radio-option"><input type="radio" name="queijo" value="Cheddar"> Cheddar</label>
+                    </div>
+                    <div class="option-group">
+                        <span class="option-title">Adicionais (Opcional)</span>`;
+                addonsList.forEach((addon, idx) => { 
+                    html += `<label class="check-option"><span><input type="checkbox" class="addon-check" value="${idx}"> ${addon.name}</span><span>+ R$ ${addon.price.toFixed(2).replace('.',',')}</span></label>`; 
+                });
+                html += `</div>`;
+            }
+
+            // === NOVA LÓGICA DE REFRIGERANTES PARA OS COMBOS ===
+            if (item.cat === 'Combos') {
+                html += `
+                    <div class="option-group">
+                        <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32;">Refrigerante Incluso (Escolha 1)</span>
+                        <select id="combo-refri-1" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; font-size: 16px;">
+                            <option value="Coca-Cola lata">Coca-Cola lata</option>
+                            <option value="Coca-Cola Zero lata">Coca-Cola Zero lata</option>
+                            <option value="Guaraná Antarctica lata">Guaraná Antarctica lata</option>
+                            <option value="Guaraná Antarctica Zero lata">Guaraná Antarctica Zero lata</option>
+                        </select>
+                `;
+                
+                // Se for o Combo Casal Uai (id '011'), adiciona a segunda opção
+                if (id === '011') {
+                    html += `
+                        <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32; margin-top: 10px;">2º Refrigerante Incluso</span>
+                        <select id="combo-refri-2" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
+                            <option value="Coca-Cola lata">Coca-Cola lata</option>
+                            <option value="Coca-Cola Zero lata">Coca-Cola Zero lata</option>
+                            <option value="Guaraná Antarctica lata">Guaraná Antarctica lata</option>
+                            <option value="Guaraná Antarctica Zero lata">Guaraná Antarctica Zero lata</option>
+                        </select>
+                    `;
+                }
+                html += `</div>`;
+            }
+            // ====================================================
+
+            // O input de quantidade vai para TODOS os itens que abrem o modal
+            html += `
+                <div class="modal-qtd-container">
+                    <label style="font-weight:bold; font-size: 1.1rem;">Quantidade deste item:</label>
+                    <input type="number" id="modal-qtd" value="1" min="1" max="20" class="input-modal-qtd">
+                </div>
+            `;
+            
+            optionsDiv.innerHTML = html;
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function confirmItem() {
+            const idNum = parseInt(currentItemSelection.id);
+            const inputQtd = document.getElementById('modal-qtd');
+            const qtdDesejada = inputQtd ? (parseInt(inputQtd.value) || 1) : 1;
+            
+            let detalhesTemp = "";
+            let adicionaisTemp = [];
+            let precoAdicionais = 0;
+
+            // Busca os detalhes apenas se o item for um lanche/combo
+            if (idNum >= 1 && idNum <= 14) {
+                const pontoElement = document.querySelector('input[name="ponto"]:checked');
+                const queijoElement = document.querySelector('input[name="queijo"]:checked');
+                
+                if(pontoElement && queijoElement) {
+                    detalhesTemp = `${pontoElement.value}, ${queijoElement.value}`;
+                }
+                
+                document.querySelectorAll('.addon-check:checked').forEach(chk => {
+                    const addon = addonsList[chk.value];
+                    adicionaisTemp.push(addon);
+                    precoAdicionais += addon.price;
+                });
+            }
+
+            // === CAPTURA A ESCOLHA DOS REFRIGERANTES ===
+            const refri1Select = document.getElementById('combo-refri-1');
+            const refri2Select = document.getElementById('combo-refri-2');
+            let stringRefri = "";
+            
+            if (refri1Select) {
+                if (refri2Select) {
+                    stringRefri = `Refris: 1x ${refri1Select.value}, 1x ${refri2Select.value}`;
+                } else {
+                    stringRefri = `Refri: ${refri1Select.value}`;
+                }
+            }
+
+            // Junta a string do refrigerante com os detalhes do lanche
+            if (stringRefri !== "") {
+                if (detalhesTemp !== "") {
+                    detalhesTemp += " | " + stringRefri;
+                } else {
+                    detalhesTemp = stringRefri;
+                }
+            }
+            // ===========================================
+
+            const observacaoTemp = document.getElementById('modal-obs').value;
+
+            // Faz o loop para adicionar as unidades selecionadas
+            for (let i = 0; i < qtdDesejada; i++) {
+                const novoItem = {
+                    ...currentItemSelection,
+                    price: currentItemSelection.price + precoAdicionais,
+                    details: detalhesTemp,
+                    addons: [...adicionaisTemp],
+                    obs: observacaoTemp
+                };
+                cart.push(novoItem);
+            }
+
+            updateCartUI();
+            closeModal();
+        }
+
+        function closeModal() { 
+            document.getElementById('product-modal').classList.add('hidden'); 
+        }
+
+        function updateCartUI() {
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const isDelivery = (currentService === 'delivery');
+            const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
+
+            document.getElementById('cart-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('cart-count').innerText = `${cart.length} itens`;
+
+            let cartHtml = cart.map((item, idx) => `
+                <div class="cart-item">
+                    <div class="cart-item-header">
+                        <span>${item.name}</span>
+                        <span>R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div class="cart-item-details">
+                        ${item.details ? item.details + '<br>' : ''}
+                        ${item.addons && item.addons.length > 0 ? 'Adic: ' + item.addons.map(a => a.name).join(', ') + '<br>' : ''}
+                        ${item.obs ? 'Obs: ' + item.obs : ''}
+                    </div>
+                    <div class="remove-item" onclick="removeFromCart(${idx})">Remover item</div>
+                </div>`).join('');
+
+            if (isDelivery) {
+                cartHtml += `<div class="cart-item" style="border-bottom: none; background: #fff9e6; margin-top: 10px; border-radius: 5px;">
+                    <div class="cart-item-header" style="color: #d35400;">
+                        <span><strong>Taxa de Entrega</strong></span>
+                        <span><strong>R$ ${TAXA_DELIVERY.toFixed(2).replace('.', ',')}</strong></span>
+                    </div>
+                </div>`;
+            }
+
+            document.getElementById('cart-list').innerHTML = cartHtml;
+            document.getElementById('final-total').innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+        }
+
+        function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
+        
+        function openCart() { 
+            if (cart.length === 0) { alert("Carrinho vazio"); return; } 
+            document.getElementById('cart-modal').classList.remove('hidden'); 
+        }
+        
+        function cancelOrder() { 
+            if(confirm("Deseja cancelar o pedido?")) location.reload(); 
+        }
+
+async function finalizeOrder() {
+    // 1. Verificação de segurança: impede envio de carrinho vazio
+    if (!cart || cart.length === 0) {
+        alert("Carrinho vazio! Adicione itens antes de finalizar.");
+        return;
+    }
+
+    const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+    const isDelivery = (currentService === 'delivery');
+    const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
+
+    // 2. Mapeamento rigoroso dos itens para evitar 'undefined'
+    // Mapeamento rigoroso para garantir que adicionais e detalhes apareçam no Firebase
+    const itensFormatados = cart.map(item => ({
+    nome: item.name || "Produto",
+    preco: item.price || 0,
+    detalhes: item.details || "", // Ex: "Ao ponto, Muçarela"
+    // Captura os nomes dos adicionais (como 'Ovo') em uma lista
+    adicionais: item.addons ? item.addons.map(a => a.name) : [], 
+    obs: item.obs || ""
+    }));
+    const pedidoParaBanco = {
+        tipo: currentService || "Não informado",
+        cliente: document.getElementById('input-nome')?.value || customerInfo.nome || "Cliente",
+        telefone: document.getElementById('input-tel')?.value || customerInfo.tel || "",
+        endereco: document.getElementById('input-end')?.value || customerInfo.endereco || "N/A",
+        pagamento: document.getElementById('input-pag')?.value || customerInfo.pagamento || "N/A",
+        mesa: currentService === 'loja' ? (customerInfo.mesa || "Não informada") : "N/A",
+        itens: itensFormatados, // Aqui garantimos que 'itens' nunca seja undefined
+        taxaEntrega: isDelivery ? TAXA_DELIVERY : 0,
+        total: totalFinal,
+        status: "pendente",
+        data: new Date().toISOString()
+    };
+
+    try {
+        const sucesso = await window.enviarPedidoAoBanco(pedidoParaBanco);
+
+        if (sucesso) {
+            alert("🍔 Uai Burger: Pedido enviado com sucesso! Você receberá a confirmação no seu WhatsApp!");
+            // Reseta e recarrega para o próximo cliente
+            location.reload(); 
+        } else {
+            alert("❌ Erro ao conectar com o banco de dados.");
+        }
+    } catch (error) {
+        console.error("Erro crítico:", error);
+        alert("Ocorreu um erro ao processar seu pedido.");
+    }
+}
+
+        function printTicket(textRaw) {
+            if (!qz.websocket.isActive()) return;
+            const config = qz.configs.create(PRINTER_NAME);
+            let printData = ['\x1B\x40', '\x1B\x61\x01', '\x1B\x21\x30', 'UAI BURGER\x0A', '\x1B\x21\x00', '--------------------------------\x0A', '\x1B\x61\x00', textRaw.replace(/\*/g, '').replace(/\n/g, '\x0A'), '\x0A\x0A\x0A\x0A', '\x1D\x56\x42\x00'];
+            qz.print(config, printData).catch(e => console.error(e));
+        }
+
+        // LÓGICA DO QR CODE
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mesaParam = urlParams.get('mesa'); 
+
+            if (mesaParam) {
+                customerInfo.type = 'Loja';
+                customerInfo.mesa = mesaParam;
+                document.getElementById('setup-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                document.getElementById('header-info').innerText = `Mesa: ${mesaParam}`;
+                renderMenu();
+            }
+        });
+    </script>
+    <!-- Scripts do Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFQ7K4zXoGtlynUMyBleenBL9PbXdz3O0",
+    authDomain: "uai-burger-delivery.firebaseapp.com",
+    projectId: "uai-burger-delivery",
+    storageBucket: "uai-burger-delivery.firebasestorage.app",
+    messagingSenderId: "525005872360",
+    appId: "1:525005872360:web:8f57f6f9b56e3dbce8fd5d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // --- CONFIGURAÇÃO DE RECEITAS PARA ESTOQUE ---
+  const receitasEstoque = {
+    "Uai Burger": { "pao_brioche": 1, "blend_150g": 1 },
+    "Uai Salada": { "pao_brioche": 1, "blend_150g": 1 },
+    "Uai Bacon": { "pao_brioche": 1, "blend_150g": 1 },
+    "Duplo Uai Bacon": { "pao_brioche": 1, "blend_150g": 2 },
+    "Uai Ovo": { "pao_brioche": 1, "blend_150g": 1 },
+    "Uai Tropeiro": { "pao_brioche": 1, "blend_150g": 1 },
+    "Uai Raiz": { "pao_brioche": 1, "blend_linguica": 1 },
+    "Combo Uai Bacon": { "pao_brioche": 1, "blend_150g": 1 },
+    "Combo Duplo Uai Bacon": { "pao_brioche": 1, "blend_150g": 2 },
+    "Combo Casal Uai": { "pao_brioche": 2, "blend_150g": 3 }
+  };
+
+  // --- FUNÇÃO PARA PROCESSAR BAIXA NO ESTOQUE ---
+  async function processarBaixaEstoque(itensCarrinho) {
+    const estoqueRef = doc(db, "estoque", "geral"); // Altere "geral" para o nome do seu documento de estoque
+    let baixas = {};
+
+    itensCarrinho.forEach(item => {
+      const nomeBase = item.name.includes("x ") ? item.name.split("x ")[1] : item.name;
+
+      // 1. Baixa de Lanches e Combos (Insumos)
+      if (receitasEstoque[nomeBase]) {
+        for (let insumo in receitasEstoque[nomeBase]) {
+          baixas[insumo] = (baixas[insumo] || 0) + receitasEstoque[nomeBase][insumo];
+        }
+      }
+
+      // 2. Baixa de Bebidas (Avulsas)
+      if (item.cat === 'Bebidas') {
+          // Extrai a quantidade do nome (ex: "2x Coca-cola")
+          const qtdBebida = item.name.includes("x ") ? parseInt(item.name.split("x ")[0]) : 1;
+          baixas[nomeBase] = (baixas[nomeBase] || 0) + qtdBebida;
+      }
+
+      // 3. Baixa de Bebidas dentro de Combos (Extraído dos detalhes)
+      if (item.cat === 'Combos' && item.details) {
+          // Procura por nomes de bebidas conhecidas dentro da string de detalhes
+          const listaBebidas = [
+            "Coca-Cola lata", "Coca-Cola Zero lata", "Guaraná Antarctica lata", 
+            "Guaraná Antarctica Zero lata", "Coca-cola 600ml", "Coca-cola 600ml Zero",
+            "Guaraná 600ml", "Guaraná 600ml Zero", "Suco de Laranja", "Suco de Uva",
+            "Cerveja Antarctica 473ml", "Cerveja Brahma 473ml", "Cerveja Skol 473ml", 
+            "Água 500ml", "Água com Gas"
+          ];
+          
+          listaBebidas.forEach(bebida => {
+              if (item.details.includes(bebida)) {
+                  baixas[bebida] = (baixas[bebida] || 0) + 1;
+              }
+          });
+      }
+
+      // 4. Baixa de Adicionais (Somente Blend 150g)
+      if (item.addons && item.addons.length > 0) {
+        item.addons.forEach(addon => {
+          if (addon.name === "Hamburger 150g") {
+            baixas["blend_150g"] = (baixas["blend_150g"] || 0) + 1;
+          }
+        });
+      }
+    });
+
+    // Converte o objeto de baixas em comandos increment do Firebase
+    let updateData = {};
+    for (let key in baixas) {
+      updateData[key] = increment(-baixas[key]);
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await updateDoc(estoqueRef, updateData);
+    }
+  }
+
+  window.enviarPedidoAoBanco = async (pedido) => {
+    try {
+      // 1. Salva o pedido
+      const docRef = await addDoc(collection(db, "pedidos"), {
+        tipo: pedido.tipo || "Não informado",
+        cliente: pedido.cliente || "Sem nome",
+        telefone: pedido.telefone || "Sem telefone",
+        endereco: pedido.endereco || "Não informado",
+        pagamento: pedido.pagamento || "Não informado",
+        mesa: pedido.mesa || "N/A",
+        itens: pedido.itens,
+        taxaEntrega: pedido.taxaEntrega || 0,
+        total: pedido.total,
+        status: "pendente",
+        data: new Date()
+      });
+
+      // 2. Executa a baixa de estoque automaticamente
+      await processarBaixaEstoque(cart);
+
+      return true;
+    } catch (e) {
+      console.error("Erro ao salvar pedido ou atualizar estoque: ", e);
+      return false;
+    }
+  };
+</script>
+</body>
+</html>
