@@ -435,10 +435,10 @@
                     <div class="option-group">
                         <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32;">Refrigerante Incluso (Escolha 1)</span>
                         <select id="combo-refri-1" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; font-size: 16px;">
-                            <option value="Coca-Cola lata">Coca-Cola lata</option>
-                            <option value="Coca-Cola Zero lata">Coca-Cola Zero lata</option>
+                            <option value="Coca-cola lata">Coca-cola lata</option>
+                            <option value="Coca-cola lata Zero">Coca-cola lata Zero</option>
                             <option value="Guaraná Antarctica lata">Guaraná Antarctica lata</option>
-                            <option value="Guaraná Antarctica Zero lata">Guaraná Antarctica Zero lata</option>
+                            <option value="Guaraná Antarctica Zero">Guaraná Antarctica Zero</option>
                         </select>
                 `;
                 
@@ -447,10 +447,10 @@
                     html += `
                         <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32; margin-top: 10px;">2º Refrigerante Incluso</span>
                         <select id="combo-refri-2" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
-                            <option value="Coca-Cola lata">Coca-Cola lata</option>
-                            <option value="Coca-Cola Zero lata">Coca-Cola Zero lata</option>
+                            <option value="Coca-cola lata">Coca-cola lata</option>
+                            <option value="Coca-cola lata Zero">Coca-cola lata Zero</option>
                             <option value="Guaraná Antarctica lata">Guaraná Antarctica lata</option>
-                            <option value="Guaraná Antarctica Zero lata">Guaraná Antarctica Zero lata</option>
+                            <option value="Guaraná Antarctica Zero">Guaraná Antarctica Zero</option>
                         </select>
                     `;
                 }
@@ -716,8 +716,8 @@ async function finalizeOrder() {
       if (item.cat === 'Combos' && item.details) {
           // Procura por nomes de bebidas conhecidas dentro da string de detalhes
           const listaBebidas = [
-            "Coca-Cola lata", "Coca-Cola Zero lata", "Guaraná Antarctica lata", 
-            "Guaraná Antarctica Zero lata", "Coca-cola 600ml", "Coca-cola 600ml Zero",
+            "Coca-cola lata", "Coca-cola lata Zero", "Guaraná Antarctica lata", 
+            "Guaraná Antarctica Zero", "Coca-cola 600ml", "Coca-cola 600ml Zero",
             "Guaraná 600ml", "Guaraná 600ml Zero", "Suco de Laranja", "Suco de Uva",
             "Cerveja Antarctica 473ml", "Cerveja Brahma 473ml", "Cerveja Skol 473ml", 
             "Água 500ml", "Água com Gas"
