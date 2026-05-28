@@ -715,9 +715,8 @@ async function finalizeOrder() {
           baixas[nomeBase] = (baixas[nomeBase] || 0) + qtdBebida;
       }
 
-      // 3. Baixa de Bebidas dentro de Combos (Extraído dos detalhes)
+// 3. Baixa de Bebidas dentro de Combos (Extraído dos detalhes)
       if (item.cat === 'Combos' && item.details) {
-          // Procura por nomes de bebidas conhecidas dentro da string de detalhes
           const listaBebidas = [
             "Coca-cola lata", "Coca-cola lata Zero", "Guaraná Antarctica lata", 
             "Guaraná Antarctica Zero", "Coca-cola 600ml", "Coca-cola 600ml Zero",
@@ -726,9 +725,20 @@ async function finalizeOrder() {
             "Água 500ml", "Água com Gas"
           ];
           
-          listaBebidas.forEach(bebida => {
-              if (item.details.includes(bebida)) {
-                  baixas[bebida] = (baixas[bebida] || 0) + 1;
+          // ORDENAÇÃO: Coloca os nomes maiores primeiro (ex: testa "Coca-cola lata Zero" antes de "Coca-cola lata")
+          const bebidasOrdenadas = listaBebidas.sort((a, b) => b.length - a.length);
+          
+          let detalhesTemp = item.details; // Cria uma cópia da frase do pedido
+
+          bebidasOrdenadas.forEach(bebida => {
+              // Verifica quantas vezes a bebida aparece na frase (resolve o problema do Combo Casal com 2 bebidas iguais)
+              let ocorrencias = detalhesTemp.split(bebida).length - 1;
+              
+              if (ocorrencias > 0) {
+                  baixas[bebida] = (baixas[bebida] || 0) + ocorrencias;
+                  
+                  // O PULO DO GATO: Apaga o nome da bebida da frase para ela não causar o falso positivo
+                  detalhesTemp = detalhesTemp.split(bebida).join("###");
               }
           });
       }
