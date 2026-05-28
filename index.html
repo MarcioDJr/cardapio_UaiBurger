@@ -650,14 +650,17 @@ async function finalizeOrder() {
             const mesaParam = urlParams.get('mesa'); 
 
             if (mesaParam) {
+                currentService = 'loja'; // <-- CORREÇÃO AQUI: Informa ao sistema o tipo de serviço
                 customerInfo.type = 'Loja';
                 customerInfo.mesa = mesaParam;
+                
                 document.getElementById('setup-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 document.getElementById('header-info').innerText = `Mesa: ${mesaParam}`;
                 renderMenu();
             }
         });
+            
     </script>
     <!-- Scripts do Firebase -->
 <script type="module">
