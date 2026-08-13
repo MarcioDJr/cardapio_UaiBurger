@@ -11,8 +11,8 @@
     
     <style>
         :root {
-            --primary: #6C0803; /* Terracota */
-            --secondary: #FFDB58; /* Amarelo Mostarda */
+            --primary: #6C0803; 
+            --secondary: #FFDB58; 
             --dark: #2c2c2c;
             --light: #f4f4f4;
             --white: #ffffff;
@@ -58,7 +58,6 @@
 
         .menu-list { padding: 15px; max-width: 800px; margin: 0 auto; }
                 
-        /* Card do produto aprimorado */
         .menu-item { 
             background: white; border-radius: 10px; padding: 12px; margin-bottom: 15px; 
             display: flex; justify-content: space-between; align-items: center; 
@@ -90,19 +89,13 @@
             font-weight: bold; color: var(--text-on-secondary); flex-shrink: 0;
         }
 
-        /* Estilos para o input de quantidade (bebidas) */
         .qtd-input { width: 45px; height: 35px; text-align: center; border: 1px solid var(--primary); border-radius: 5px; font-weight: bold; margin-right: 10px; }
         .modal-qtd-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px; border: 1px solid #ddd; }
         .input-modal-qtd { width: 60px; height: 40px; text-align: center; font-size: 1.2rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 5px; }
 
-        /* Responsivo: reduz tamanho da imagem em telas pequenas */
         @media (max-width: 480px) {
-            .item-img-container {
-                width: 70px; height: 70px; margin-right: 8px;
-            }
-            .item-placeholder {
-                font-size: 2rem;
-            }
+            .item-img-container { width: 70px; height: 70px; margin-right: 8px; }
+            .item-placeholder { font-size: 2rem; }
         }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 900; }
@@ -124,9 +117,32 @@
         .cart-item-header { display: flex; justify-content: space-between; font-weight: bold; }
         .cart-item-details { font-size: 0.85rem; color: #666; padding-left: 10px; margin-top: 5px; }
         .remove-item { color: red; font-size: 0.8rem; margin-top: 5px; cursor: pointer; display: inline-block; }
+        #closed-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--primary); color: var(--text-on-primary);
+    z-index: 5000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 20px; text-align: center;
+}
+.closed-card {
+    background: white; color: var(--dark); padding: 30px 20px; 
+    border-radius: 15px; width: 100%; max-width: 400px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
     </style>
 </head>
 <body>
+    <div id="closed-screen" class="hidden">
+    <div style="font-size: 4rem; margin-bottom: 20px;">😴</div>
+    <div class="closed-card">
+        <h2 style="margin-bottom: 15px; color: var(--primary);">Estamos Fechados!</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6;">
+            A <strong>Uai Burger</strong> funciona nos seguintes dias e horários:<br><br>
+            📅 <strong>Quinta a Domingo</strong><br>
+            ⏰ <strong>Das 18:30 às 23:00</strong><br><br>
+            Agradecemos a preferência e esperamos você em nosso horário de atendimento! 🍔
+        </p>
+    </div>
+</div>
 
     <div id="setup-screen">
         <div class="logo-area">Uai Burger 🍔</div>
@@ -196,12 +212,11 @@
         </div>
     </div>
     
-        <script>
+    <script>
         const WHATSAPP_NUMBER = "5535998382405";
         const PRINTER_NAME = "EPSON TM-T20X Receipt";
         const TAXA_DELIVERY = 8.00;
 
-        // Menu com imagens (adicione o caminho da imagem em cada item)
         const menuItems = [
             { id: '001', cat: 'Hamburgers', name: 'Uai Burger', price: 26.90, desc: 'Blend 150g, muçarela, pão brioche, molho especial.', img: 'img/001.webp' },
             { id: '002', cat: 'Hamburgers', name: 'Uai Salada', price: 28.90, desc: 'Blend 150g, muçarela, tomate, alface, pão brioche, molho especial.', img: 'img/002.webp' },
@@ -213,9 +228,6 @@
             { id: '009', cat: 'Combos', name: 'Combo Uai Bacon', price: 46.90, desc: 'Uai Bacon + Batata ind. + Refri lata', img: 'img/009.webp' },
             { id: '010', cat: 'Combos', name: 'Combo Duplo Uai Bacon', price: 59.90, desc: 'Duplo Uai Bacon + Batata ind. + Refri lata', img: 'img/010.webp' },
             { id: '011', cat: 'Combos', name: 'Combo Casal Uai', price: 109.90, desc: 'Duplo Uai Bacon + Uai Bacon + 2 Batatas + 2 Refris lata', img: 'img/011.webp' },
-        //  { id: '012', cat: 'Mini Lanches', name: 'Mini Burger (8un)', price: 55.90, desc: 'Blend artesanal, muçarela, pão hamburger, molho especial', img: 'img/012.webp' },
-        //  { id: '013', cat: 'Mini Lanches', name: 'Mini Salada (8un)', price: 60.90, desc: 'Blend, muçarela, tomate, alface, pão, molho', img: 'img/013.webp' },
-        //  { id: '014', cat: 'Mini Lanches', name: 'Mini Bacon (8un)', price: 65.90, desc: 'Blend, cheddar, bacon, alface, tomate, pão, molho', img: 'img/014.webp' },
             { id: '015', cat: 'Acompanhamentos', name: 'Batata Individual', price: 10.50, desc: '', img: 'img/015.webp' },
             { id: '016', cat: 'Acompanhamentos', name: 'Batata Grande', price: 16.50, desc: '', img: 'img/016.webp' },
             { id: '017', cat: 'Acompanhamentos', name: 'Batata c/ Cheddar/Bacon', price: 21.50, desc: '', img: 'img/017.webp' },
@@ -241,8 +253,6 @@
             { id: '042', cat: 'Bebidas', name: 'Cerveja Heineken 330ml', price: 13.00, desc:'', img: 'img/042.webp'},
             { id: '037', cat: 'Bebidas', name: 'Água 500ml', price: 4.00, desc: '', img: 'img/037.webp' },
             { id: '038', cat: 'Bebidas', name: 'Água com Gas', price: 4.00, desc: '', img: 'img/038.webp' },
-            // { id: '039', cat: 'Sobremesa', name: 'Mini Donuts Nutella', price: 12.90, desc: 'Porção com oito Mini Donuts', img: 'img/039.webp' },
-            // { id: '040', cat: 'Sobremesa', name: 'Mini Donuts Doce de Leite', price: 12.90, desc: 'Porção com oito Mini Donuts', img: 'img/040.webp' },
             { id: '041', cat: 'Sobremesa', name: 'Mini Churros', price: 9.90, desc: 'Porção com oito Mini Churros', img: 'img/041.webp'}
         ];
         
@@ -261,7 +271,6 @@
         let cart = [];
         let currentItemSelection = null;
 
-        // QZ Tray Setup
         qz.security.setCertificatePromise((resolve) => resolve("-----BEGIN CERTIFICATE-----\nMIID...[CERT]...-----END CERTIFICATE-----"));
         qz.security.setSignaturePromise(() => new Promise((resolve) => resolve()));
         
@@ -324,7 +333,6 @@
             filterCat(categories[0], catContainer.firstChild);
         }
         
-                // Função auxiliar para gerar o bloco de imagem (com placeholder se não houver img)
         function getImageHtml(item) {
             if (item.img) {
                 return `<img src="${item.img}" alt="${item.name}" class="item-img" onerror="this.style.display='none'; this.parentNode.querySelector('.item-placeholder').style.display='block';">`;
@@ -332,6 +340,7 @@
                 return `<span class="item-placeholder">🍔</span>`;
             }
         }
+
         function filterCat(category, element) {
              document.querySelectorAll('.cat-tag').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
@@ -340,7 +349,6 @@
             const filteredItems = menuItems.filter(item => item.cat === category);
             
             menuContainer.innerHTML = filteredItems.map(item => {
-                // Imagem comum a todos
                 const imgHtml = getImageHtml(item);
                 if (item.cat === 'Bebidas') {
                     return `
@@ -376,7 +384,6 @@
             }).join('');
         }
 
-        // ... (o restante das funções permanece IDÊNTICO ao original) ...
         function addBebidaComQtd(id) {
             const itemOriginal = menuItems.find(i => i.id === id);
             const inputElement = document.getElementById(`qtd-${id}`);
@@ -408,7 +415,6 @@
             let html = '';
             const idNum = parseInt(id);
 
-            // Apenas para Lanches e Combos (IDs 1 a 14) gera as opções de carne/queijo e adicionais
             if (idNum >= 1 && idNum <= 14) {
                 html += `
                     <div class="option-group">
@@ -430,7 +436,6 @@
                 html += `</div>`;
             }
 
-            // === NOVA LÓGICA DE REFRIGERANTES PARA OS COMBOS ===
             if (item.cat === 'Combos') {
                 html += `
                     <div class="option-group">
@@ -443,7 +448,6 @@
                         </select>
                 `;
                 
-                // Se for o Combo Casal Uai (id '011'), adiciona a segunda opção
                 if (id === '011') {
                     html += `
                         <span class="option-title" style="background-color: #e8f5e9; color: #2e7d32; margin-top: 10px;">2º Refrigerante Incluso</span>
@@ -457,9 +461,7 @@
                 }
                 html += `</div>`;
             }
-            // ====================================================
 
-            // O input de quantidade vai para TODOS os itens que abrem o modal
             html += `
                 <div class="modal-qtd-container">
                     <label style="font-weight:bold; font-size: 1.1rem;">Quantidade deste item:</label>
@@ -480,7 +482,6 @@
             let adicionaisTemp = [];
             let precoAdicionais = 0;
 
-            // Busca os detalhes apenas se o item for um lanche/combo
             if (idNum >= 1 && idNum <= 14) {
                 const pontoElement = document.querySelector('input[name="ponto"]:checked');
                 const queijoElement = document.querySelector('input[name="queijo"]:checked');
@@ -496,7 +497,6 @@
                 });
             }
 
-            // === CAPTURA A ESCOLHA DOS REFRIGERANTES ===
             const refri1Select = document.getElementById('combo-refri-1');
             const refri2Select = document.getElementById('combo-refri-2');
             let stringRefri = "";
@@ -509,7 +509,6 @@
                 }
             }
 
-            // Junta a string do refrigerante com os detalhes do lanche
             if (stringRefri !== "") {
                 if (detalhesTemp !== "") {
                     detalhesTemp += " | " + stringRefri;
@@ -517,11 +516,9 @@
                     detalhesTemp = stringRefri;
                 }
             }
-            // ===========================================
 
             const observacaoTemp = document.getElementById('modal-obs').value;
 
-            // Faz o loop para adicionar as unidades selecionadas
             for (let i = 0; i < qtdDesejada; i++) {
                 const novoItem = {
                     ...currentItemSelection,
@@ -537,9 +534,7 @@
             closeModal();
         }
 
-        function closeModal() { 
-            document.getElementById('product-modal').classList.add('hidden'); 
-        }
+        function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
 
         function updateCartUI() {
             const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
@@ -587,71 +582,105 @@
             if(confirm("Deseja cancelar o pedido?")) location.reload(); 
         }
 
-async function finalizeOrder() {
-    // 1. Verificação de segurança: impede envio de carrinho vazio
+        async function finalizeOrder() {
+    // 2. Faz uma última checagem antes de enviar para o banco
+    if (!verificarHorarioFuncionamento()) {
+        alert("O nosso horário de funcionamento foi encerrado. Não é possível enviar novos pedidos hoje.");
+        return;
+    }
+
     if (!cart || cart.length === 0) {
         alert("Carrinho vazio! Adicione itens antes de finalizar.");
         return;
     }
+    
+    // ... restante do código da função continua exatamente igual ...
 
-    const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-    const isDelivery = (currentService === 'delivery');
-    const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const isDelivery = (currentService === 'delivery');
+            const totalFinal = isDelivery ? (subtotal + TAXA_DELIVERY) : subtotal;
 
-    // 2. Mapeamento rigoroso dos itens para evitar 'undefined'
-    // Mapeamento rigoroso para garantir que adicionais e detalhes apareçam no Firebase
-    const itensFormatados = cart.map(item => ({
-    nome: item.name || "Produto",
-    preco: item.price || 0,
-    detalhes: item.details || "", // Ex: "Ao ponto, Muçarela"
-    // Captura os nomes dos adicionais (como 'Ovo') em uma lista
-    adicionais: item.addons ? item.addons.map(a => a.name) : [], 
-    obs: item.obs || ""
-    }));
-    const pedidoParaBanco = {
-        tipo: currentService || "Não informado",
-        cliente: document.getElementById('input-nome')?.value || customerInfo.nome || "Cliente",
-        telefone: document.getElementById('input-tel')?.value || customerInfo.tel || "",
-        endereco: document.getElementById('input-end')?.value || customerInfo.endereco || "N/A",
-        pagamento: document.getElementById('input-pag')?.value || customerInfo.pagamento || "N/A",
-        mesa: currentService === 'loja' ? (customerInfo.mesa || "Não informada") : "N/A",
-        itens: itensFormatados, // Aqui garantimos que 'itens' nunca seja undefined
-        taxaEntrega: isDelivery ? TAXA_DELIVERY : 0,
-        total: totalFinal,
-        status: "pendente",
-        data: new Date().toISOString()
-    };
+            const itensFormatados = cart.map(item => ({
+                nome: item.name || "Produto",
+                preco: item.price || 0,
+                detalhes: item.details || "", 
+                adicionais: item.addons ? item.addons.map(a => a.name) : [], 
+                obs: item.obs || "",
+                cat: item.cat || "" // Enviando a categoria para ajudar o backend a processar o estoque
+            }));
+            
+            const pedidoParaBanco = {
+                tipo: currentService || "Não informado",
+                cliente: document.getElementById('input-nome')?.value || customerInfo.nome || "Cliente",
+                telefone: document.getElementById('input-tel')?.value || customerInfo.tel || "",
+                endereco: document.getElementById('input-end')?.value || customerInfo.endereco || "N/A",
+                pagamento: document.getElementById('input-pag')?.value || customerInfo.pagamento || "N/A",
+                mesa: currentService === 'loja' ? (customerInfo.mesa || "Não informada") : "N/A",
+                itens: itensFormatados,
+                taxaEntrega: isDelivery ? TAXA_DELIVERY : 0,
+                total: totalFinal,
+                status: "pendente",
+                //data: new Date().toISOString()
+            };
 
-    try {
-        const sucesso = await window.enviarPedidoAoBanco(pedidoParaBanco);
+            try {
+                const sucesso = await window.enviarPedidoAoBanco(pedidoParaBanco);
 
-        if (sucesso) {
-            alert("🍔 Uai Burger: Pedido enviado com sucesso! Você receberá a confirmação no seu WhatsApp!");
-            // Reseta e recarrega para o próximo cliente
-            location.reload(); 
-        } else {
-            alert("❌ Erro ao conectar com o banco de dados.");
-        }
-    } catch (error) {
-        console.error("Erro crítico:", error);
-        alert("Ocorreu um erro ao processar seu pedido.");
-    }
-}
-
-        function printTicket(textRaw) {
-            if (!qz.websocket.isActive()) return;
-            const config = qz.configs.create(PRINTER_NAME);
-            let printData = ['\x1B\x40', '\x1B\x61\x01', '\x1B\x21\x30', 'UAI BURGER\x0A', '\x1B\x21\x00', '--------------------------------\x0A', '\x1B\x61\x00', textRaw.replace(/\*/g, '').replace(/\n/g, '\x0A'), '\x0A\x0A\x0A\x0A', '\x1D\x56\x42\x00'];
-            qz.print(config, printData).catch(e => console.error(e));
+                if (sucesso) {
+                    alert("🍔 Uai Burger: Pedido enviado com sucesso! Você receberá a confirmação no seu WhatsApp!");
+                    location.reload(); 
+                } else {
+                    alert("❌ Erro ao conectar com o banco de dados.");
+                }
+            } catch (error) {
+                console.error("Erro crítico:", error);
+                alert("Ocorreu um erro ao processar seu pedido.");
+            }
         }
 
-        // LÓGICA DO QR CODE
+// 1. Define a função livremente para que qualquer parte do código possa usá-la
+        function verificarHorarioFuncionamento() {
+            const agora = new Date();
+            const dia = agora.getDay(); // 0 = Domingo, 1 = Segunda... 6 = Sábado
+            const hora = agora.getHours();
+            const minuto = agora.getMinutes();
+
+            const minutosAtuais = (hora * 60) + minuto;
+            const abertura = (18 * 60) + 30; // 18:30
+            const fechamento = 23 * 60;      // 23:00
+
+            // Dias de funcionamento: Quinta (4), Sexta (5), Sábado (6), Domingo (0)
+            const diasAbertos = [0, 4, 5, 6];
+            
+            const diaAberto = diasAbertos.includes(dia);
+            const horarioAberto = minutosAtuais >= abertura && minutosAtuais <= fechamento;
+
+            if (!diaAberto || !horarioAberto) {
+                // Esconde as telas do app e mostra a tela de loja fechada
+                document.getElementById('setup-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
+                document.getElementById('product-modal').classList.add('hidden');
+                document.getElementById('cart-modal').classList.add('hidden');
+                
+                document.getElementById('closed-screen').classList.remove('hidden');
+                return false; 
+            }
+            
+            return true; 
+        }
+
+        // 2. Cria o evento de load de forma independente e fecha corretamente com "});"
         window.addEventListener('load', function() {
+            // Faz a verificação logo que o site abre
+            if (!verificarHorarioFuncionamento()) {
+                return; // Para a execução aqui se estiver fechado
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const mesaParam = urlParams.get('mesa'); 
 
             if (mesaParam) {
-                currentService = 'loja'; // <-- CORREÇÃO AQUI: Informa ao sistema o tipo de serviço
+                currentService = 'loja';
                 customerInfo.type = 'Loja';
                 customerInfo.mesa = mesaParam;
                 
@@ -661,136 +690,37 @@ async function finalizeOrder() {
                 renderMenu();
             }
         });
-            
-    </script>
-    <!-- Scripts do Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    </script>    
+    <!-- Scripts do Firebase limpos, apenas gravando o pedido -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      // IMPORTANTE: serverTimestamp adicionado na linha abaixo
+      import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFQ7K4zXoGtlynUMyBleenBL9PbXdz3O0",
-    authDomain: "uai-burger-delivery.firebaseapp.com",
-    projectId: "uai-burger-delivery",
-    storageBucket: "uai-burger-delivery.firebasestorage.app",
-    messagingSenderId: "525005872360",
-    appId: "1:525005872360:web:8f57f6f9b56e3dbce8fd5d"
-  };
+      const firebaseConfig = {
+        apiKey: "AIzaSyAFQ7K4zXoGtlynUMyBleenBL9PbXdz3O0",
+        authDomain: "uai-burger-delivery.firebaseapp.com",
+        projectId: "uai-burger-delivery",
+        storageBucket: "uai-burger-delivery.firebasestorage.app",
+        messagingSenderId: "525005872360",
+        appId: "1:525005872360:web:8f57f6f9b56e3dbce8fd5d"
+      };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-  // --- CONFIGURAÇÃO DE RECEITAS PARA ESTOQUE ---
-  const receitasEstoque = {
-    "Uai Burger": { "pao_brioche": 1, "blend_150g": 1 },
-    "Uai Salada": { "pao_brioche": 1, "blend_150g": 1 },
-    "Uai Bacon": { "pao_brioche": 1, "blend_150g": 1 },
-    "Duplo Uai Bacon": { "pao_brioche": 1, "blend_150g": 2 },
-    "Uai Ovo": { "pao_brioche": 1, "blend_150g": 1 },
-    "Uai Tropeiro": { "pao_brioche": 1, "blend_150g": 1 },
-    "Uai Raiz": { "pao_brioche": 1, "blend_linguica": 1 },
-    "Combo Uai Bacon": { "pao_brioche": 1, "blend_150g": 1 },
-    "Combo Duplo Uai Bacon": { "pao_brioche": 1, "blend_150g": 2 },
-    "Combo Casal Uai": { "pao_brioche": 2, "blend_150g": 3 }
-  };
-
-  // --- FUNÇÃO PARA PROCESSAR BAIXA NO ESTOQUE ---
-  async function processarBaixaEstoque(itensCarrinho) {
-    const estoqueRef = doc(db, "estoque", "geral"); // Altere "geral" para o nome do seu documento de estoque
-    let baixas = {};
-
-    itensCarrinho.forEach(item => {
-      const nomeBase = item.name.includes("x ") ? item.name.split("x ")[1] : item.name;
-
-      // 1. Baixa de Lanches e Combos (Insumos)
-      if (receitasEstoque[nomeBase]) {
-        for (let insumo in receitasEstoque[nomeBase]) {
-          baixas[insumo] = (baixas[insumo] || 0) + receitasEstoque[nomeBase][insumo];
+      window.enviarPedidoAoBanco = async (pedido) => {
+        try {
+          // Injeta o Timestamp nativo do servidor do Firebase no pedido
+          pedido.data = serverTimestamp();
+      
+          await addDoc(collection(db, "pedidos"), pedido);
+          return true;
+        } catch (e) {
+          console.error("Erro ao salvar pedido: ", e);
+          return false;
         }
-      }
-
-      // 2. Baixa de Bebidas (Avulsas)
-      if (item.cat === 'Bebidas') {
-          // Extrai a quantidade do nome (ex: "2x Coca-cola")
-          const qtdBebida = item.name.includes("x ") ? parseInt(item.name.split("x ")[0]) : 1;
-          baixas[nomeBase] = (baixas[nomeBase] || 0) + qtdBebida;
-      }
-
-// 3. Baixa de Bebidas dentro de Combos (Extraído dos detalhes)
-      if (item.cat === 'Combos' && item.details) {
-          const listaBebidas = [
-            "Coca-cola lata", "Coca-cola lata Zero", "Guaraná Antarctica lata", 
-            "Guaraná Antarctica Zero", "Coca-cola 600ml", "Coca-cola 600ml Zero",
-            "Guaraná 600ml", "Guaraná 600ml Zero", "Suco de Laranja", "Suco de Uva",
-            "Cerveja Antarctica 473ml", "Cerveja Brahma 473ml", "Cerveja Skol 473ml", 
-            "Água 500ml", "Água com Gas"
-          ];
-          
-          // ORDENAÇÃO: Coloca os nomes maiores primeiro (ex: testa "Coca-cola lata Zero" antes de "Coca-cola lata")
-          const bebidasOrdenadas = listaBebidas.sort((a, b) => b.length - a.length);
-          
-          let detalhesTemp = item.details; // Cria uma cópia da frase do pedido
-
-          bebidasOrdenadas.forEach(bebida => {
-              // Verifica quantas vezes a bebida aparece na frase (resolve o problema do Combo Casal com 2 bebidas iguais)
-              let ocorrencias = detalhesTemp.split(bebida).length - 1;
-              
-              if (ocorrencias > 0) {
-                  baixas[bebida] = (baixas[bebida] || 0) + ocorrencias;
-                  
-                  // O PULO DO GATO: Apaga o nome da bebida da frase para ela não causar o falso positivo
-                  detalhesTemp = detalhesTemp.split(bebida).join("###");
-              }
-          });
-      }
-
-      // 4. Baixa de Adicionais (Somente Blend 150g)
-      if (item.addons && item.addons.length > 0) {
-        item.addons.forEach(addon => {
-          if (addon.name === "Hamburger 150g") {
-            baixas["blend_150g"] = (baixas["blend_150g"] || 0) + 1;
-          }
-        });
-      }
-    });
-
-    // Converte o objeto de baixas em comandos increment do Firebase
-    let updateData = {};
-    for (let key in baixas) {
-      updateData[key] = increment(-baixas[key]);
-    }
-
-    if (Object.keys(updateData).length > 0) {
-      await updateDoc(estoqueRef, updateData);
-    }
-  }
-
-  window.enviarPedidoAoBanco = async (pedido) => {
-    try {
-      // 1. Salva o pedido
-      const docRef = await addDoc(collection(db, "pedidos"), {
-        tipo: pedido.tipo || "Não informado",
-        cliente: pedido.cliente || "Sem nome",
-        telefone: pedido.telefone || "Sem telefone",
-        endereco: pedido.endereco || "Não informado",
-        pagamento: pedido.pagamento || "Não informado",
-        mesa: pedido.mesa || "N/A",
-        itens: pedido.itens,
-        taxaEntrega: pedido.taxaEntrega || 0,
-        total: pedido.total,
-        status: "pendente",
-        data: new Date()
-      });
-
-      // 2. Executa a baixa de estoque automaticamente
-      await processarBaixaEstoque(cart);
-
-      return true;
-    } catch (e) {
-      console.error("Erro ao salvar pedido ou atualizar estoque: ", e);
-      return false;
-    }
-  };
-</script>
+      };
+    </script>
 </body>
 </html>
