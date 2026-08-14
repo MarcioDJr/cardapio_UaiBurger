@@ -8,7 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6C0803">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <style>
         :root {
             --primary: #6C0803; 
@@ -722,5 +724,18 @@
         }
       };
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('✅ PWA: Service Worker registrado com sucesso!', registration.scope);
+        })
+        .catch(error => {
+          console.error('❌ PWA: Falha ao registrar o Service Worker:', error);
+        });
+    });
+  }
+</script>
 </body>
 </html>
