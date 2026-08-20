@@ -141,8 +141,10 @@
             A <strong>Uai Burger</strong> funciona nos seguintes dias e horários:<br><br>
             📅 <strong>Quinta a Domingo</strong><br>
             ⏰ <strong>Das 18:30 às 23:00</strong><br><br>
-            Agradecemos a preferência e esperamos você em nosso horário de atendimento! 🍔
+            Fique à vontade para olhar nosso cardápio, mas <strong>não estamos recebendo pedidos no momento.</strong> 🍔
         </p>
+        <button class="btn btn-primary" onclick="fecharAvisoFechado()" style="margin-top: 15px;">Ver Cardápio Agora</button>
+        <div style="font-size: 0.8rem; margin-top: 10px; color: #666;">(Fechando automaticamente em instantes...)</div>
     </div>
 </div>
 
@@ -577,6 +579,10 @@
         function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
         
         function openCart() { 
+            if (!verificarHorarioFuncionamento()) {
+            alert("A hamburgueria está fechada no momento. Você pode visualizar nosso cardápio, mas não é possível enviar pedidos.");
+            return;
+            }
             if (cart.length === 0) { alert("Carrinho vazio"); return; } 
             document.getElementById('cart-modal').classList.remove('hidden'); 
         }
@@ -641,10 +647,15 @@
             }
         }
 
-// 1. Define a função livremente para que qualquer parte do código possa usá-la
+// 1. Função para o botão de fechar o aviso manualmente
+        function fecharAvisoFechado() {
+            document.getElementById('closed-screen').classList.add('hidden');
+        }
+
+        // 2. Apenas verifica se está no horário, devolvendo true ou false (sem esconder o site base)
         function verificarHorarioFuncionamento() {
             const agora = new Date();
-            const dia = agora.getDay(); // 0 = Domingo, 1 = Segunda... 6 = Sábado
+            const dia = agora.getDay();
             const hora = agora.getHours();
             const minuto = agora.getMinutes();
 
@@ -652,31 +663,23 @@
             const abertura = (18 * 60) + 30; // 18:30
             const fechamento = 23 * 60;      // 23:00
 
-            // Dias de funcionamento: Quinta (4), Sexta (5), Sábado (6), Domingo (0)
             const diasAbertos = [0, 4, 5, 6];
-            
             const diaAberto = diasAbertos.includes(dia);
             const horarioAberto = minutosAtuais >= abertura && minutosAtuais <= fechamento;
 
-            if (!diaAberto || !horarioAberto) {
-                // Esconde as telas do app e mostra a tela de loja fechada
-                document.getElementById('setup-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.add('hidden');
-                document.getElementById('product-modal').classList.add('hidden');
-                document.getElementById('cart-modal').classList.add('hidden');
-                
-                document.getElementById('closed-screen').classList.remove('hidden');
-                return false; 
-            }
-            
-            return true; 
+            return (diaAberto && horarioAberto); 
         }
 
-        // 2. Cria o evento de load de forma independente e fecha corretamente com "});"
+        // 3. Controla o que acontece quando o site carrega
         window.addEventListener('load', function() {
-            // Faz a verificação logo que o site abre
+            // Se estiver fechado, mostra a tela de aviso sobre o cardápio
             if (!verificarHorarioFuncionamento()) {
-                return; // Para a execução aqui se estiver fechado
+                document.getElementById('closed-screen').classList.remove('hidden');
+                
+                // Esconde a tela de aviso automaticamente após 7 segundos (7000 milissegundos)
+                setTimeout(() => {
+                    fecharAvisoFechado();
+                }, 7000);
             }
 
             const urlParams = new URLSearchParams(window.location.search);
