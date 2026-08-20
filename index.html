@@ -216,8 +216,94 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Promocional / Lançamentos -->
+<div id="promo-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align: center; max-width: 420px; border-radius: 15px; padding: 20px;">
+        <!-- Barra de Progresso de 7 segundos -->
+        <div style="width: 100%; background: #eee; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+            <div id="promo-progress" style="width: 100%; height: 100%; background: var(--primary);"></div>
+        </div>
+        
+        <h3 id="promo-title" style="margin: 5px 0 12px 0; color: var(--primary); font-size: 1.3rem;">🔥 Novidade no Uai!</h3>
+        
+        <div style="width: 100%; max-height: 280px; overflow: hidden; border-radius: 10px; margin-bottom: 15px; background: #f0f0f0;">
+            <img id="promo-img" src="" alt="Promoção" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-cancel" onclick="fecharPromoModal()" style="flex: 1; padding: 10px;">Ver Cardápio</button>
+            <button class="btn btn-confirm" id="btn-promo-action" style="flex: 1.5; padding: 10px; background: #27ae60;">QUERO ESSE! 🍔</button>
+        </div>
+    </div>
+</div>
     
     <script>
+
+        // --- CONFIGURAÇÃO DAS PROMOÇÕES / LANÇAMENTOS ---
+// Altere o caminho da imagem e o ID do produto para mudar o banner
+const bannersPromo = [
+    {
+        titulo: '🔥 Lançamento: Uai Mineiro!',
+        img: 'img/043a.webp',  // Foto que vai aparecer no destaque
+        produtoId: '043'       // ID do produto que abrirá ao clicar em "QUERO ESSE!"
+    }
+];
+
+let promoTimer = null;
+
+function iniciarPromoModal() {
+    // 1. Não exibe se o usuário já viu o banner nesta sessão de navegação
+    if (sessionStorage.getItem('promo_exibida')) return;
+    if (!bannersPromo || bannersPromo.length === 0) return;
+
+    const banner = bannersPromo[0];
+    
+    document.getElementById('promo-title').innerText = banner.titulo;
+    document.getElementById('promo-img').src = banner.img;
+    
+    // Configura a ação do botão "QUERO ESSE!"
+    const btnAction = document.getElementById('btn-promo-action');
+    btnAction.onclick = function() {
+        fecharPromoModal();
+        
+        // Se o cliente ainda estiver na tela inicial, libera o cardápio automaticamente
+        if (document.getElementById('app-screen').classList.contains('hidden')) {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('header-info').innerText = 'Apenas Consulta';
+            renderMenu();
+        }
+        
+        // Abre o modal de opções do produto promocionado
+        openProductModal(banner.produtoId);
+    };
+
+    // Exibe o modal
+    document.getElementById('promo-modal').classList.remove('hidden');
+    sessionStorage.setItem('promo_exibida', 'true');
+
+    // Animação da barra de progresso (7 segundos)
+    const progressBar = document.getElementById('promo-progress');
+    progressBar.style.transition = 'none';
+    progressBar.style.width = '100%';
+    
+    setTimeout(() => {
+        progressBar.style.transition = 'width 7s linear';
+        progressBar.style.width = '0%';
+    }, 50);
+
+    // Temporizador para fechar sozinho após 7 segundos
+    promoTimer = setTimeout(() => {
+        fecharPromoModal();
+    }, 7000);
+}
+
+function fecharPromoModal() {
+    if (promoTimer) clearTimeout(promoTimer);
+    document.getElementById('promo-modal').classList.add('hidden');
+}
+        
         const WHATSAPP_NUMBER = "5535998382405";
         const PRINTER_NAME = "EPSON TM-T20X Receipt";
         const TAXA_DELIVERY = 8.00;
@@ -675,31 +761,30 @@
             return (diaAberto && horarioAberto); 
         }
 
-        // 3. Controla a inicialização da página
-        window.addEventListener('load', function() {
-            if (!verificarHorarioFuncionamento()) {
-                document.getElementById('closed-screen').classList.remove('hidden');
-                
-                // Oculta automaticamente após 7 segundos
-                setTimeout(() => {
-                    fecharAvisoFechado();
-                }, 7000);
-            }
+window.addEventListener('load', function() {
+    if (!verificarHorarioFuncionamento()) {
+        // Se estiver FECHADO: Exibe o aviso de fechado
+        document.getElementById('closed-screen').classList.remove('hidden');
+        setTimeout(() => { fecharAvisoFechado(); }, 7000);
+    } else {
+        // Se estiver ABERTO: Exibe a tela de promoção/lançamento
+        iniciarPromoModal();
+    }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const mesaParam = urlParams.get('mesa'); 
+    const urlParams = new URLSearchParams(window.location.search);
+    const mesaParam = urlParams.get('mesa'); 
 
-            if (mesaParam) {
-                currentService = 'loja';
-                customerInfo.type = 'Loja';
-                customerInfo.mesa = mesaParam;
-                
-                document.getElementById('setup-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('header-info').innerText = `Mesa: ${mesaParam}`;
-                renderMenu();
-            }
-        });
+    if (mesaParam) {
+        currentService = 'loja';
+        customerInfo.type = 'Loja';
+        customerInfo.mesa = mesaParam;
+        
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        document.getElementById('header-info').innerText = `Mesa: ${mesaParam}`;
+        renderMenu();
+    }
+});
     </script>    
     
     <!-- Scripts do Firebase -->
