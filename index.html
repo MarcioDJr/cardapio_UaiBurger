@@ -119,34 +119,35 @@
         .cart-item-header { display: flex; justify-content: space-between; font-weight: bold; }
         .cart-item-details { font-size: 0.85rem; color: #666; padding-left: 10px; margin-top: 5px; }
         .remove-item { color: red; font-size: 0.8rem; margin-top: 5px; cursor: pointer; display: inline-block; }
+        
         #closed-screen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: var(--primary); color: var(--text-on-primary);
-    z-index: 5000; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; padding: 20px; text-align: center;
-}
-.closed-card {
-    background: white; color: var(--dark); padding: 30px 20px; 
-    border-radius: 15px; width: 100%; max-width: 400px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--primary); color: var(--text-on-primary);
+            z-index: 5000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px; text-align: center;
+        }
+        .closed-card {
+            background: white; color: var(--dark); padding: 30px 20px; 
+            border-radius: 15px; width: 100%; max-width: 400px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
     <div id="closed-screen" class="hidden">
-    <div style="font-size: 4rem; margin-bottom: 20px;">😴</div>
-    <div class="closed-card">
-        <h2 style="margin-bottom: 15px; color: var(--primary);">Estamos Fechados!</h2>
-        <p style="font-size: 1.1rem; line-height: 1.6;">
-            A <strong>Uai Burger</strong> funciona nos seguintes dias e horários:<br><br>
-            📅 <strong>Quinta a Domingo</strong><br>
-            ⏰ <strong>Das 18:30 às 23:00</strong><br><br>
-            Fique à vontade para olhar nosso cardápio, mas <strong>não estamos recebendo pedidos no momento.</strong> 🍔
-        </p>
-        <button class="btn btn-primary" onclick="fecharAvisoFechado()" style="margin-top: 15px;">Ver Cardápio Agora</button>
-        <div style="font-size: 0.8rem; margin-top: 10px; color: #666;">(Fechando automaticamente em instantes...)</div>
+        <div style="font-size: 4rem; margin-bottom: 20px;">😴</div>
+        <div class="closed-card">
+            <h2 style="margin-bottom: 15px; color: var(--primary);">Estamos Fechados!</h2>
+            <p style="font-size: 1.1rem; line-height: 1.6;">
+                A <strong>Uai Burger</strong> funciona nos seguintes dias e horários:<br><br>
+                📅 <strong>Quinta a Domingo</strong><br>
+                ⏰ <strong>Das 18:30 às 23:00</strong><br><br>
+                Fique à vontade para olhar nosso cardápio, mas <strong>não estamos recebendo pedidos no momento.</strong> 🍔
+            </p>
+            <button class="btn btn-primary" onclick="fecharAvisoFechado()" style="margin-top: 15px;">Ver Cardápio Agora</button>
+            <div style="font-size: 0.8rem; margin-top: 10px; color: #666;">(Fechando automaticamente em instantes...)</div>
+        </div>
     </div>
-</div>
 
     <div id="setup-screen">
         <div class="logo-area">Uai Burger 🍔</div>
@@ -258,7 +259,7 @@
             { id: '037', cat: 'Bebidas', name: 'Água 500ml', price: 4.00, desc: '', img: 'img/037.webp' },
             { id: '038', cat: 'Bebidas', name: 'Água com Gas', price: 4.00, desc: '', img: 'img/038.webp' },
             { id: '041', cat: 'Sobremesa', name: 'Mini Churros', price: 9.90, desc: 'Porção com oito Mini Churros', img: 'img/041.webp'},
-            { id: '043', cat: 'Hamburgers', name: 'Uai Mineiro', price: 44,90, desc: 'Blend 150g, pão de brioche, gorgonzola, bacon crocante, cebola crispy, rúcula e maionese de rapadura.', img: 'img/043a.webp' }
+            { id: '043', cat: 'Hamburgers', name: 'Uai Mineiro', price: 44.90, desc: 'Blend 150g, pão de brioche, gorgonzola, bacon crocante, cebola crispy, rúcula e maionese de rapadura.', img: 'img/043a.webp' }
         ];
         
         const addonsList = [
@@ -347,7 +348,7 @@
         }
 
         function filterCat(category, element) {
-             document.querySelectorAll('.cat-tag').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.cat-tag').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
             
             const menuContainer = document.getElementById('menu-container');
@@ -580,8 +581,8 @@
         
         function openCart() { 
             if (!verificarHorarioFuncionamento()) {
-            alert("A hamburgueria está fechada no momento. Você pode visualizar nosso cardápio, mas não é possível enviar pedidos.");
-            return;
+                alert("A hamburgueria está fechada no momento. Você pode visualizar nosso cardápio, mas não é possível enviar pedidos.");
+                return;
             }
             if (cart.length === 0) { alert("Carrinho vazio"); return; } 
             document.getElementById('cart-modal').classList.remove('hidden'); 
@@ -592,18 +593,15 @@
         }
 
         async function finalizeOrder() {
-    // 2. Faz uma última checagem antes de enviar para o banco
-    if (!verificarHorarioFuncionamento()) {
-        alert("O nosso horário de funcionamento foi encerrado. Não é possível enviar novos pedidos hoje.");
-        return;
-    }
+            if (!verificarHorarioFuncionamento()) {
+                alert("O nosso horário de funcionamento foi encerrado. Não é possível enviar novos pedidos hoje.");
+                return;
+            }
 
-    if (!cart || cart.length === 0) {
-        alert("Carrinho vazio! Adicione itens antes de finalizar.");
-        return;
-    }
-    
-    // ... restante do código da função continua exatamente igual ...
+            if (!cart || cart.length === 0) {
+                alert("Carrinho vazio! Adicione itens antes de finalizar.");
+                return;
+            }
 
             const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
             const isDelivery = (currentService === 'delivery');
@@ -615,7 +613,7 @@
                 detalhes: item.details || "", 
                 adicionais: item.addons ? item.addons.map(a => a.name) : [], 
                 obs: item.obs || "",
-                cat: item.cat || "" // Enviando a categoria para ajudar o backend a processar o estoque
+                cat: item.cat || ""
             }));
             
             const pedidoParaBanco = {
@@ -628,8 +626,7 @@
                 itens: itensFormatados,
                 taxaEntrega: isDelivery ? TAXA_DELIVERY : 0,
                 total: totalFinal,
-                status: "pendente",
-                //data: new Date().toISOString()
+                status: "pendente"
             };
 
             try {
@@ -647,12 +644,20 @@
             }
         }
 
-// 1. Função para o botão de fechar o aviso manualmente
+        // 1. Função para fechar o aviso e liberar a visualização direta do cardápio
         function fecharAvisoFechado() {
             document.getElementById('closed-screen').classList.add('hidden');
+            
+            // Se o usuário ainda não entrou no cardápio, abre direto para consulta
+            if (document.getElementById('app-screen').classList.contains('hidden')) {
+                document.getElementById('setup-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                document.getElementById('header-info').innerText = 'Apenas Consulta';
+                renderMenu();
+            }
         }
 
-        // 2. Apenas verifica se está no horário, devolvendo true ou false (sem esconder o site base)
+        // 2. Apenas verifica se está no horário
         function verificarHorarioFuncionamento() {
             const agora = new Date();
             const dia = agora.getDay();
@@ -663,20 +668,19 @@
             const abertura = (18 * 60) + 30; // 18:30
             const fechamento = 23 * 60;      // 23:00
 
-            const diasAbertos = [0, 4, 5, 6];
+            const diasAbertos = [0, 4, 5, 6]; // Quinta, Sexta, Sábado, Domingo
             const diaAberto = diasAbertos.includes(dia);
             const horarioAberto = minutosAtuais >= abertura && minutosAtuais <= fechamento;
 
             return (diaAberto && horarioAberto); 
         }
 
-        // 3. Controla o que acontece quando o site carrega
+        // 3. Controla a inicialização da página
         window.addEventListener('load', function() {
-            // Se estiver fechado, mostra a tela de aviso sobre o cardápio
             if (!verificarHorarioFuncionamento()) {
                 document.getElementById('closed-screen').classList.remove('hidden');
                 
-                // Esconde a tela de aviso automaticamente após 7 segundos (7000 milissegundos)
+                // Oculta automaticamente após 7 segundos
                 setTimeout(() => {
                     fecharAvisoFechado();
                 }, 7000);
@@ -697,10 +701,10 @@
             }
         });
     </script>    
-    <!-- Scripts do Firebase limpos, apenas gravando o pedido -->
+    
+    <!-- Scripts do Firebase -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      // IMPORTANTE: serverTimestamp adicionado na linha abaixo
       import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
@@ -717,9 +721,7 @@
 
       window.enviarPedidoAoBanco = async (pedido) => {
         try {
-          // Injeta o Timestamp nativo do servidor do Firebase no pedido
           pedido.data = serverTimestamp();
-      
           await addDoc(collection(db, "pedidos"), pedido);
           return true;
         } catch (e) {
@@ -729,17 +731,17 @@
       };
     </script>
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(registration => {
-          console.log('✅ PWA: Service Worker registrado com sucesso!', registration.scope);
-        })
-        .catch(error => {
-          console.error('❌ PWA: Falha ao registrar o Service Worker:', error);
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+              console.log('✅ PWA: Service Worker registrado com sucesso!', registration.scope);
+            })
+            .catch(error => {
+              console.error('❌ PWA: Falha ao registrar o Service Worker:', error);
+            });
         });
-    });
-  }
-</script>
+      }
+    </script>
 </body>
 </html>
