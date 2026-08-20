@@ -506,7 +506,6 @@ function openProductModal(id) {
     const optionsDiv = document.getElementById('modal-options');
     let html = '';
 
-    // ✅ AGORA VERIFICA PELA CATEGORIA E NÃO APENAS PELO ID
     if (item.cat === 'Hamburgers') {
         html += `
             <div class="option-group">
@@ -514,12 +513,19 @@ function openProductModal(id) {
                 <label class="radio-option"><input type="radio" name="ponto" value="Ao ponto" checked> Ao ponto</label>
                 <label class="radio-option"><input type="radio" name="ponto" value="Mal passada"> Mal passada</label>
                 <label class="radio-option"><input type="radio" name="ponto" value="Bem passada"> Bem passada</label>
-            </div>
+            </div>`;
+
+        // ✅ EXIBE ESCOLHA DE QUEIJO APENAS PARA OS OUTROS HAMBÚRGUERES
+        if (item.id !== '043') {
+            html += `
             <div class="option-group">
                 <span class="option-title">Tipo de Queijo (Obrigatório)</span>
                 <label class="radio-option"><input type="radio" name="queijo" value="Muçarela" checked> Muçarela</label>
                 <label class="radio-option"><input type="radio" name="queijo" value="Cheddar"> Cheddar</label>
-            </div>
+            </div>`;
+        }
+
+        html += `
             <div class="option-group">
                 <span class="option-title">Adicionais (Opcional)</span>`;
         addonsList.forEach((addon, idx) => { 
@@ -573,13 +579,16 @@ function confirmItem() {
     let adicionaisTemp = [];
     let precoAdicionais = 0;
 
-    // ✅ AGORA CAPTURA OS DETALHES BASEADO NA CATEGORIA HAMBURGERS
     if (currentItemSelection.cat === 'Hamburgers') {
         const pontoElement = document.querySelector('input[name="ponto"]:checked');
         const queijoElement = document.querySelector('input[name="queijo"]:checked');
         
-        if(pontoElement && queijoElement) {
-            detalhesTemp = `${pontoElement.value}, ${queijoElement.value}`;
+        // ✅ MONTA A STRING APENAS COM OS CAMPOS PRESENTES
+        if (pontoElement) {
+            detalhesTemp = pontoElement.value;
+            if (queijoElement) {
+                detalhesTemp += `, ${queijoElement.value}`;
+            }
         }
         
         document.querySelectorAll('.addon-check:checked').forEach(chk => {
@@ -624,7 +633,7 @@ function confirmItem() {
 
     updateCartUI();
     closeModal();
-}
+}       
         function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
 
         function updateCartUI() {
