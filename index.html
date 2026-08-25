@@ -302,6 +302,12 @@ function iniciarPromoModal() {
 function fecharPromoModal() {
     if (promoTimer) clearTimeout(promoTimer);
     document.getElementById('promo-modal').classList.add('hidden');
+
+    if (window.exibirFechadoAposPromo) {
+        window.exibirFechadoAposPromo = false;
+        document.getElementById('closed-screen').classList.remove('hidden');
+        setTimeout(() => { fecharAvisoFechado(); }, 7000);
+    }
 }
         
         const WHATSAPP_NUMBER = "5535998382405";
@@ -515,7 +521,6 @@ function openProductModal(id) {
                 <label class="radio-option"><input type="radio" name="ponto" value="Bem passada"> Bem passada</label>
             </div>`;
 
-        // ✅ EXIBE ESCOLHA DE QUEIJO APENAS PARA OS OUTROS HAMBÚRGUERES
         if (item.id !== '043') {
             html += `
             <div class="option-group">
@@ -583,7 +588,6 @@ function confirmItem() {
         const pontoElement = document.querySelector('input[name="ponto"]:checked');
         const queijoElement = document.querySelector('input[name="queijo"]:checked');
         
-        // ✅ MONTA A STRING APENAS COM OS CAMPOS PRESENTES
         if (pontoElement) {
             detalhesTemp = pontoElement.value;
             if (queijoElement) {
@@ -738,11 +742,9 @@ function confirmItem() {
             }
         }
 
-        // 1. Função para fechar o aviso e liberar a visualização direta do cardápio
         function fecharAvisoFechado() {
             document.getElementById('closed-screen').classList.add('hidden');
             
-            // Se o usuário ainda não entrou no cardápio, abre direto para consulta
             if (document.getElementById('app-screen').classList.contains('hidden')) {
                 document.getElementById('setup-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
@@ -751,7 +753,6 @@ function confirmItem() {
             }
         }
 
-        // 2. Apenas verifica se está no horário
         function verificarHorarioFuncionamento() {
             const agora = new Date();
             const dia = agora.getDay();
@@ -770,13 +771,18 @@ function confirmItem() {
         }
 
 window.addEventListener('load', function() {
+    // Exibe sempre a tela promocional ao entrar
+    iniciarPromoModal();
+
     if (!verificarHorarioFuncionamento()) {
-        // Se estiver FECHADO: Exibe o aviso de fechado
-        document.getElementById('closed-screen').classList.remove('hidden');
-        setTimeout(() => { fecharAvisoFechado(); }, 7000);
-    } else {
-        // Se estiver ABERTO: Exibe a tela de promoção/lançamento
-        iniciarPromoModal();
+        const promoModal = document.getElementById('promo-modal');
+        if (promoModal && promoModal.classList.contains('hidden')) {
+            document.getElementById('closed-screen').classList.remove('hidden');
+            setTimeout(() => { fecharAvisoFechado(); }, 7000);
+        } else {
+            // Agenda a exibição do aviso de fechado para logo após a promoção
+            window.exibirFechadoAposPromo = true;
+        }
     }
 
     const urlParams = new URLSearchParams(window.location.search);
