@@ -218,25 +218,25 @@
     </div>
 
     <!-- Modal Promocional / Lançamentos -->
-<div id="promo-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="text-align: center; max-width: 420px; border-radius: 15px; padding: 20px;">
-        <!-- Barra de Progresso de 7 segundos -->
-        <div style="width: 100%; background: #eee; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-            <div id="promo-progress" style="width: 100%; height: 100%; background: var(--primary);"></div>
-        </div>
+    <div id="promo-modal" class="modal-overlay hidden" style="align-items: center;">
+        <div class="modal-content" style="text-align: center; max-width: 420px; border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+            <!-- Barra de Progresso de 7 segundos -->
+            <div style="width: 100%; background: #eee; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+                <div id="promo-progress" style="width: 100%; height: 100%; background: var(--primary);"></div>
+            </div>
         
-        <h3 id="promo-title" style="margin: 5px 0 12px 0; color: var(--primary); font-size: 1.3rem;">🔥 Novidade no Uai!</h3>
+            <h3 id="promo-title" style="margin: 5px 0 12px 0; color: var(--primary); font-size: 1.3rem;">🔥 Novidade no Uai!</h3>
         
-        <div style="width: 100%; max-height: 280px; overflow: hidden; border-radius: 10px; margin-bottom: 15px; background: #f0f0f0;">
-            <img id="promo-img" src="" alt="Promoção" style="width: 100%; height: 100%; object-fit: cover; display: block;">
-        </div>
+            <div style="width: 100%; max-height: 260px; overflow: hidden; border-radius: 10px; margin-bottom: 15px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                <img id="promo-img" src="" alt="Promoção" style="max-width: 100%; max-height: 260px; object-fit: contain; display: block;">
+            </div>
         
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-cancel" onclick="fecharPromoModal()" style="flex: 1; padding: 10px;">Ver Cardápio</button>
-            <button class="btn btn-confirm" id="btn-promo-action" style="flex: 1.5; padding: 10px; background: #27ae60;">QUERO ESSE! 🍔</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-cancel" onclick="fecharPromoModal()" style="flex: 1; padding: 10px;">Ver Cardápio</button>
+                <button class="btn btn-confirm" id="btn-promo-action" style="flex: 1.5; padding: 10px; background: #27ae60;">QUERO ESSE! 🍔</button>
+            </div>
         </div>
     </div>
-</div>
     
     <script>
 
