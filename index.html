@@ -269,15 +269,16 @@ function iniciarPromoModal() {
     btnAction.onclick = function() {
         fecharPromoModal();
         
-        // Se o cliente ainda estiver na tela inicial, libera o cardápio automaticamente
-        if (document.getElementById('app-screen').classList.contains('hidden')) {
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('header-info').innerText = 'Apenas Consulta';
-            renderMenu();
+        // Verifica se o tipo de pedido já foi escolhido
+        if (!currentService || currentService === '') {
+            // Guarda o ID do lanche da promoção na memória
+            lanchePendente = banner.produtoId;
+            alert("Antes de montar o lanche da promoção, informe como deseja receber seu pedido!");
+            // Interrompe aqui para forçar a escolha na tela inicial
+            return;
         }
         
-        // Abre o modal de opções do produto promocionado
+        // Se já tiver escolhido (ex: mesa via QR Code), abre direto
         openProductModal(banner.produtoId);
     };
 
@@ -380,6 +381,7 @@ function fecharPromoModal() {
         let customerInfo = { type: '', mesa: '', nome: '', tel: '', endereco: '', pagamento: '' };
         let cart = [];
         let currentItemSelection = null;
+        let lanchePendente = null; // Nova variável para guardar o lanche do banner
 
         qz.security.setCertificatePromise((resolve) => resolve("-----BEGIN CERTIFICATE-----\nMIID...[CERT]...-----END CERTIFICATE-----"));
         qz.security.setSignaturePromise(() => new Promise((resolve) => resolve()));
@@ -434,6 +436,12 @@ function fecharPromoModal() {
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             renderMenu();
+
+            // O PULO DO GATO: Se o cliente clicou no banner antes de configurar o pedido, abre o lanche agora!
+            if (lanchePendente) {
+                openProductModal(lanchePendente);
+                lanchePendente = null; // Limpa a memória para as próximas vezes
+            }
         }
 
         function renderMenu() {
