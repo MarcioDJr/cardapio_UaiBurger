@@ -243,7 +243,6 @@
     <script>
 
         // --- CONFIGURAÇÃO DAS PROMOÇÕES / LANÇAMENTOS ---
-// Altere o caminho da imagem e o ID do produto para mudar o banner
 const bannersPromo = [
     {
         titulo: '🔥 Promoção de Quinta-feira',
@@ -269,16 +268,15 @@ function iniciarPromoModal() {
     btnAction.onclick = function() {
         fecharPromoModal();
         
-        // Se o cliente ainda estiver na tela inicial, libera o cardápio automaticamente
+        // Verifica se o cliente ainda está na tela inicial de setup
         if (document.getElementById('app-screen').classList.contains('hidden')) {
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('header-info').innerText = 'Apenas Consulta';
-            renderMenu();
+            // Salva o ID do produto para abrir imediatamente após o setup
+            window.produtoPendentePromo = banner.produtoId;
+            alert("Para pedir essa promoção, por favor, escolha primeiro como deseja pedir (Loja, Delivery ou Retirada) e clique em 'INICIAR PEDIDO'.");
+        } else {
+            // Se já passou da tela inicial, abre direto o modal do produto
+            openProductModal(banner.produtoId);
         }
-        
-        // Abre o modal de opções do produto promocionado
-        openProductModal(banner.produtoId);
     };
 
     // Exibe o modal
@@ -431,9 +429,16 @@ function fecharPromoModal() {
                 customerInfo = { type: 'Retirada', nome: nome, tel: document.getElementById('input-tel').value };
                 document.getElementById('header-info').innerText = `Retirada: ${nome}`;
             }
+            
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             renderMenu();
+
+            // Verifica se havia um produto promocional pendente de ser aberto
+            if (window.produtoPendentePromo) {
+                openProductModal(window.produtoPendentePromo);
+                window.produtoPendentePromo = null; // Limpa o ID
+            }
         }
 
         function renderMenu() {
